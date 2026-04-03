@@ -30,6 +30,7 @@
 		CB23EBFFF0C746928963594C /* VolleyTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */; };
 		DE7CD03D6E29806353B74EB2 /* AttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E34C185681EB16B1874BF72 /* AttendanceView.swift */; };
 		E7EE503BBD477B3244B30013 /* TrainingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C465D1F1CBFB0D035218403B /* TrainingSession.swift */; };
+		ED97B628441FB8E6FF018049 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB35B120B4601FE39F5755E3 /* Assets.xcassets */; };
 		F606BAA03F4D549FED0C258E /* GroupsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5894418978953F2B5C476DB7 /* GroupsListView.swift */; };
 		F8A6E732A07E9BFCB7C4D353 /* AttendanceRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A06B496D46D0402E6812E5ED /* AttendanceRecord.swift */; };
 /* End PBXBuildFile section */
@@ -60,6 +61,7 @@
 		D46AE44A592E88B1AFEF21B4 /* PlayerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerListView.swift; sourceTree = "<group>"; };
 		E71ADDF5FABCF6943D273396 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		EFFC2BC411EE799118A431D4 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		FB35B120B4601FE39F5755E3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FE2584DE0D54D46C23A42CAA /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -67,6 +69,7 @@
 		01CD2BC45CDAD04B8E75A674 /* VolleyTracker */ = {
 			isa = PBXGroup;
 			children = (
+				FB35B120B4601FE39F5755E3 /* Assets.xcassets */,
 				B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */,
 				5ADDE006B5934BA176F428A7 /* Models */,
 				3E0827D1BD9272263BCAC84C /* Utilities */,
@@ -176,6 +179,7 @@
 			buildConfigurationList = F9AAE98C0DC38EE025A68925 /* Build configuration list for PBXNativeTarget "VolleyTracker" */;
 			buildPhases = (
 				AC5EB91BD4C0A0A84A00E7DC /* Sources */,
+				6E40BE9E564EA074CB2AF697 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -220,6 +224,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6E40BE9E564EA074CB2AF697 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ED97B628441FB8E6FF018049 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AC5EB91BD4C0A0A84A00E7DC /* Sources */ = {

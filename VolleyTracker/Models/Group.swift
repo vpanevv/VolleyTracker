@@ -7,7 +7,7 @@ final class TeamGroup {
     var name: String
     var ageCategory: String
     var colorHex: String
-    var icon: String
+    var emoji: String
     var trainingDays: [Int]     // 0 = Sunday … 6 = Saturday
     var trainingTime: Date?
     var createdAt: Date
@@ -19,12 +19,12 @@ final class TeamGroup {
         name: String,
         ageCategory: String = "",
         colorHex: String = "#007AFF",
-        icon: String = "sportscourt.fill"
+        emoji: String = "🏐"
     ) {
         self.name         = name
         self.ageCategory  = ageCategory
         self.colorHex     = colorHex
-        self.icon         = icon
+        self.emoji        = emoji
         self.trainingDays = []
         self.createdAt    = Date()
     }

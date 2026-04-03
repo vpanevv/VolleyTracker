@@ -17,7 +17,20 @@ struct VolleyTrackerApp: App {
         do {
             return try ModelContainer(for: schema)
         } catch {
-            fatalError("ModelContainer creation failed: \(error)")
+            // Schema changed (e.g. property renamed) — wipe the local store and start fresh.
+            // All data is local-only so this is safe during development.
+            let appSupport = FileManager.default
+                .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            let storeBase = appSupport.appendingPathComponent("default.store")
+            for suffix in ["", "-shm", "-wal"] {
+                try? FileManager.default.removeItem(
+                    at: URL(fileURLWithPath: storeBase.path + suffix))
+            }
+            do {
+                return try ModelContainer(for: schema)
+            } catch let retryError {
+                fatalError("ModelContainer creation failed after store reset: \(retryError)")
+            }
         }
     }()
 

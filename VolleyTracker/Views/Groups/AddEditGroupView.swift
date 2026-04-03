@@ -11,7 +11,7 @@ struct AddEditGroupView: View {
     @State private var name = ""
     @State private var ageCategory = ""
     @State private var colorHex = "#007AFF"
-    @State private var icon = "sportscourt.fill"
+    @State private var emoji = "🏐"
     @State private var selectedDays: Set<Int> = []
     @State private var trainingTime = Date()
     @State private var hasTime = false
@@ -22,13 +22,6 @@ struct AddEditGroupView: View {
         "#007AFF","#5AC8FA","#34C759","#30D158",
         "#FF9500","#FF3B30","#FF2D55","#AF52DE",
         "#5856D6","#00C7BE","#A2845E","#636366"
-    ]
-
-    private let icons = [
-        "sportscourt.fill","figure.volleyball","trophy.fill",
-        "star.fill","bolt.fill","flame.fill",
-        "crown.fill","shield.fill","heart.fill",
-        "flag.fill","rosette","medal.fill"
     ]
 
     private let dayLetters = ["S","M","T","W","T","F","S"]
@@ -50,13 +43,27 @@ struct AddEditGroupView: View {
                     .padding(.vertical, 4)
                 }
 
-                Section("Icon") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 10) {
-                        ForEach(icons, id: \.self) { sym in
-                            iconCell(sym)
-                        }
+                Section("Group Icon") {
+                    VStack(spacing: 12) {
+                        TextField("", text: $emoji)
+                            .font(.system(size: 60))
+                            .multilineTextAlignment(.center)
+                            .onChange(of: emoji) { _, newVal in
+                                if let lastChar = newVal.last, lastChar.isEmoji {
+                                    emoji = String(lastChar)
+                                } else if newVal.isEmpty {
+                                    emoji = "🏐"
+                                } else {
+                                    emoji = "🏐"
+                                }
+                            }
+
+                        Text("Tap to choose an emoji")
+                            .font(.caption)
+                            .foregroundStyle(Color(.secondaryLabel))
                     }
-                    .padding(.vertical, 4)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
                 }
 
                 Section("Training Schedule") {
@@ -106,21 +113,6 @@ struct AddEditGroupView: View {
             }
     }
 
-    private func iconCell(_ sym: String) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(sym == icon ? hexToColor(colorHex) : Color(.secondarySystemGroupedBackground))
-                .frame(height: 40)
-            Image(systemName: sym)
-                .font(.body)
-                .foregroundStyle(sym == icon ? .white : Color(.secondaryLabel))
-        }
-        .onTapGesture {
-            icon = sym
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        }
-    }
-
     private func dayButton(_ d: Int) -> some View {
         let selected = selectedDays.contains(d)
         return Text(dayLetters[d])
@@ -139,7 +131,7 @@ struct AddEditGroupView: View {
     // MARK: Helpers
 
     private func hexToColor(_ hex: String) -> Color {
-        var s = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
+        let s = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
         var rgb: UInt64 = 0
         Scanner(string: s).scanHexInt64(&rgb)
         return Color(
@@ -154,7 +146,7 @@ struct AddEditGroupView: View {
         name         = g.name
         ageCategory  = g.ageCategory
         colorHex     = g.colorHex
-        icon         = g.icon
+        emoji        = g.emoji
         selectedDays = Set(g.trainingDays)
         hasTime      = g.trainingTime != nil
         trainingTime = g.trainingTime ?? Date()
@@ -165,7 +157,7 @@ struct AddEditGroupView: View {
             g.name         = name.trimmed
             g.ageCategory  = ageCategory.trimmed
             g.colorHex     = colorHex
-            g.icon         = icon
+            g.emoji        = emoji
             g.trainingDays = Array(selectedDays).sorted()
             g.trainingTime = hasTime ? trainingTime : nil
         } else {
@@ -173,7 +165,7 @@ struct AddEditGroupView: View {
                 name: name.trimmed,
                 ageCategory: ageCategory.trimmed,
                 colorHex: colorHex,
-                icon: icon
+                emoji: emoji
             )
             g.trainingDays = Array(selectedDays).sorted()
             g.trainingTime = hasTime ? trainingTime : nil

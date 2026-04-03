@@ -90,13 +90,23 @@ struct GroupsListView: View {
 struct GroupRowView: View {
     let group: TeamGroup
 
+    private func hexToColor(_ hex: String) -> Color {
+        let s = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
+        var rgb: UInt64 = 0
+        Scanner(string: s).scanHexInt64(&rgb)
+        return Color(
+            red:   Double((rgb & 0xFF0000) >> 16) / 255,
+            green: Double((rgb & 0x00FF00) >>  8) / 255,
+            blue:  Double( rgb & 0x0000FF       ) / 255
+        )
+    }
+
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: group.icon)
-                .font(.title3)
-                .foregroundStyle(.blue)
+            Text(group.emoji)
+                .font(.system(size: 32))
                 .frame(width: 44, height: 44)
-                .background(Color.blue.opacity(0.12), in: .rect(cornerRadius: 10))
+                .background(hexToColor(group.colorHex).opacity(0.15), in: .rect(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(group.name)

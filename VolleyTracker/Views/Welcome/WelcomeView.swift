@@ -3,52 +3,64 @@ import SwiftUI
 struct WelcomeView: View {
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                Spacer()
+            ZStack {
+                // Layer 1: Background image
+                Image("welcomeBG")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
 
-                VStack(spacing: 20) {
-                    Image(systemName: "sportscourt.fill")
-                        .font(.system(size: 80))
-                        .foregroundStyle(.blue)
+                // Layer 2: Light dark overlay — no blur
+                Color.black.opacity(0.30)
+                    .ignoresSafeArea()
 
-                    VStack(spacing: 8) {
-                        Text("VolleyTracker")
-                            .font(.largeTitle.bold())
-                            .foregroundStyle(Color(.label))
+                // Layer 3: Content
+                VStack(spacing: 0) {
+                    Spacer()
 
-                        Text("Track your team. Own your game.")
-                            .font(.subheadline)
-                            .foregroundStyle(Color(.secondaryLabel))
+                    VStack(spacing: 20) {
+                        Image(systemName: "sportscourt.fill")
+                            .font(.system(size: 80))
+                            .foregroundStyle(.white)
+
+                        VStack(spacing: 8) {
+                            Text("VolleyTracker")
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundStyle(.white)
+
+                            Text("Track your team. Own your game.")
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.75))
+                        }
                     }
+
+                    Spacer()
+
+                    VStack(spacing: 12) {
+                        NavigationLink(destination: CreateAccountView()) {
+                            Text("Get Started")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.blue)
+                        .clipShape(.rect(cornerRadius: 14))
+
+                        NavigationLink(destination: LoginView()) {
+                            Text("I Already Have an Account")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.blue)
+                        .clipShape(.rect(cornerRadius: 14))
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 48)
                 }
-
-                Spacer()
-
-                VStack(spacing: 12) {
-                    NavigationLink(destination: CreateAccountView()) {
-                        Text("Get Started")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
-                    .clipShape(.rect(cornerRadius: 14))
-
-                    NavigationLink(destination: LoginView()) {
-                        Text("I Already Have an Account")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.blue)
-                    .clipShape(.rect(cornerRadius: 14))
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 48)
             }
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
         }
     }
 }
