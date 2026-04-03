@@ -1,6 +1,6 @@
-name: VolleyCoach
+name: VolleyTracker
 options:
-  bundleIdPrefix: com.volleycoach
+  bundleIdPrefix: com.volleytracker
   deploymentTarget:
     iOS: "18.0"
   defaultConfig: Debug
@@ -10,20 +10,22 @@ settings:
     SWIFT_VERSION: "5.10"
 
 targets:
-  VolleyCoach:
+  VolleyTracker:
     type: application
     platform: iOS
     deploymentTarget: "18.0"
     sources:
-      - path: VolleyCoach
+      - path: VolleyTracker
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.volleycoach.app
+        PRODUCT_NAME: VolleyTracker
+        PRODUCT_BUNDLE_IDENTIFIER: com.volleytracker.app
         TARGETED_DEVICE_FAMILY: "1,2"
         DEVELOPMENT_TEAM: ""
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: VolleyTracker
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Add player and coach profile photos."
