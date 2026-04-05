@@ -7,11 +7,85 @@ struct TrainingAttendanceView: View {
 
     @State private var statusMap: [PersistentIdentifier: AttendanceStatus] = [:]
     @State private var isDirty = false
+    @State private var quickMode = false
 
     private var group: TeamGroup? { session.group }
     private var players: [Player] { group?.players.sorted { $0.fullName < $1.fullName } ?? [] }
 
     var body: some View {
+        Group {
+            if quickMode {
+                quickModeView
+            } else {
+                detailListView
+            }
+        }
+        .navigationTitle(navTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        quickMode.toggle()
+                    }
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                } label: {
+                    Label(
+                        quickMode ? "Detail" : "Quick",
+                        systemImage: quickMode ? "list.bullet" : "bolt.fill"
+                    )
+                    .labelStyle(.titleAndIcon)
+                    .font(.subheadline.weight(.semibold))
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Save") { save() }
+                    .fontWeight(.semibold)
+                    .disabled(!isDirty && session.attendanceTaken)
+            }
+        }
+        .onAppear(perform: load)
+    }
+
+    // MARK: - Quick Mode
+
+    private var quickModeView: some View {
+        ScrollView {
+            // Summary strip (compact)
+            HStack(spacing: 0) {
+                summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: .blue)
+                summaryCell("Absent",  count: statusMap.values.filter { $0 != .present }.count, color: Color(.secondaryLabel))
+            }
+            .padding(.vertical, 10)
+            .background(Color(.systemGroupedBackground))
+
+            if players.isEmpty {
+                Text("No players in this group.")
+                    .foregroundStyle(Color(.secondaryLabel))
+                    .padding(.top, 40)
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(players) { player in
+                        QuickAttendanceRow(
+                            player: player,
+                            isPresent: (statusMap[player.persistentModelID] ?? .present) == .present
+                        ) {
+                            let current = statusMap[player.persistentModelID] ?? .present
+                            statusMap[player.persistentModelID] = (current == .present) ? .absent : .present
+                            isDirty = true
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+            }
+        }
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private var detailListView: some View {
         List {
             // Summary
             if !statusMap.isEmpty {
@@ -56,17 +130,6 @@ struct TrainingAttendanceView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle(navTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") { save() }
-                    .fontWeight(.semibold)
-                    .disabled(!isDirty && session.attendanceTaken)
-            }
-        }
-        .onAppear(perform: load)
     }
 
     // MARK: - Sub-views
@@ -184,5 +247,46 @@ struct AttendancePlayerRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+}
+
+// MARK: - QuickAttendanceRow
+
+struct QuickAttendanceRow: View {
+    let player: Player
+    let isPresent: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 14) {
+                Image(systemName: isPresent ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundStyle(isPresent ? .white : Color(.tertiaryLabel))
+
+                Text(player.fullName)
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .foregroundStyle(isPresent ? .white : Color(.label))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+
+                Spacer()
+
+                if let n = player.jerseyNumber {
+                    Text("#\(n)")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(isPresent ? .white.opacity(0.85) : Color(.secondaryLabel))
+                }
+            }
+            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity, minHeight: 72)
+            .background(
+                isPresent ? Color.blue : Color(.secondarySystemGroupedBackground),
+                in: .rect(cornerRadius: 14)
+            )
+            .contentShape(.rect(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: isPresent)
     }
 }
