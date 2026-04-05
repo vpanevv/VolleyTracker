@@ -10,6 +10,7 @@ final class TeamGroup {
     var emoji: String
     var trainingDays: [Int]     // 0 = Sunday … 6 = Saturday
     var trainingTime: Date?
+    var monthlyFee: Double
     var createdAt: Date
 
     @Relationship(deleteRule: .cascade) var players: [Player] = []
@@ -19,13 +20,15 @@ final class TeamGroup {
         name: String,
         ageCategory: String = "",
         colorHex: String = "#007AFF",
-        emoji: String = "🏐"
+        emoji: String = "👦",
+        monthlyFee: Double = 0
     ) {
         self.name         = name
         self.ageCategory  = ageCategory
         self.colorHex     = colorHex
         self.emoji        = emoji
         self.trainingDays = []
+        self.monthlyFee   = monthlyFee
         self.createdAt    = Date()
     }
 

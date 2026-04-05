@@ -11,10 +11,11 @@ struct AddEditGroupView: View {
     @State private var name = ""
     @State private var ageCategory = ""
     @State private var colorHex = "#007AFF"
-    @State private var emoji = "🏐"
+    @State private var emoji = "👦"
     @State private var selectedDays: Set<Int> = []
     @State private var trainingTime = Date()
     @State private var hasTime = false
+    @State private var monthlyFeeText = ""
 
     private var isEditing: Bool { group != nil }
 
@@ -43,27 +44,21 @@ struct AddEditGroupView: View {
                     .padding(.vertical, 4)
                 }
 
-                Section("Group Icon") {
-                    VStack(spacing: 12) {
-                        TextField("", text: $emoji)
-                            .font(.system(size: 60))
-                            .multilineTextAlignment(.center)
-                            .onChange(of: emoji) { _, newVal in
-                                if let lastChar = newVal.last, lastChar.isEmoji {
-                                    emoji = String(lastChar)
-                                } else if newVal.isEmpty {
-                                    emoji = "🏐"
-                                } else {
-                                    emoji = "🏐"
-                                }
-                            }
+                Section("Group Type") {
+                    HStack(spacing: 16) {
+                        genderButton(emojiValue: "👦", label: "Boys / Men")
+                        genderButton(emojiValue: "👧", label: "Girls / Women")
+                    }
+                    .padding(.vertical, 4)
+                }
 
-                        Text("Tap to choose an emoji")
-                            .font(.caption)
+                Section("Monthly Fee") {
+                    HStack {
+                        TextField("0", text: $monthlyFeeText)
+                            .keyboardType(.decimalPad)
+                        Text("€ / player")
                             .foregroundStyle(Color(.secondaryLabel))
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
                 }
 
                 Section("Training Schedule") {
@@ -94,6 +89,32 @@ struct AddEditGroupView: View {
     }
 
     // MARK: Sub-views
+
+    private func genderButton(emojiValue: String, label: String) -> some View {
+        let selected = emoji == emojiValue
+        return Button {
+            emoji = emojiValue
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } label: {
+            VStack(spacing: 6) {
+                Text(emojiValue).font(.system(size: 48))
+                Text(label)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(selected ? .white : Color(.label))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(
+                selected ? hexToColor(colorHex) : Color(.secondarySystemGroupedBackground),
+                in: .rect(cornerRadius: 12)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(selected ? hexToColor(colorHex) : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(.plain)
+    }
 
     private func colorSwatch(_ hex: String) -> some View {
         let hexColor = hexToColor(hex)
@@ -146,13 +167,29 @@ struct AddEditGroupView: View {
         name         = g.name
         ageCategory  = g.ageCategory
         colorHex     = g.colorHex
-        emoji        = g.emoji
+        emoji        = (g.emoji == "👦" || g.emoji == "👧") ? g.emoji : "👦"
         selectedDays = Set(g.trainingDays)
         hasTime      = g.trainingTime != nil
         trainingTime = g.trainingTime ?? Date()
+        monthlyFeeText = g.monthlyFee > 0 ? formattedFee(g.monthlyFee) : ""
+    }
+
+    private func formattedFee(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(Int(value))
+        }
+        return String(format: "%.2f", value)
+    }
+
+    private func parsedFee() -> Double {
+        let normalized = monthlyFeeText
+            .trimmed
+            .replacingOccurrences(of: ",", with: ".")
+        return Double(normalized) ?? 0
     }
 
     private func save() {
+        let fee = parsedFee()
         if let g = group {
             g.name         = name.trimmed
             g.ageCategory  = ageCategory.trimmed
@@ -160,12 +197,14 @@ struct AddEditGroupView: View {
             g.emoji        = emoji
             g.trainingDays = Array(selectedDays).sorted()
             g.trainingTime = hasTime ? trainingTime : nil
+            g.monthlyFee   = fee
         } else {
             let g = TeamGroup(
                 name: name.trimmed,
                 ageCategory: ageCategory.trimmed,
                 colorHex: colorHex,
-                emoji: emoji
+                emoji: emoji,
+                monthlyFee: fee
             )
             g.trainingDays = Array(selectedDays).sorted()
             g.trainingTime = hasTime ? trainingTime : nil
