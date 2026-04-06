@@ -20,9 +20,12 @@ struct TrainingAttendanceView: View {
                 detailListView
             }
         }
+        .background(AppTheme.skyBlue)
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -54,11 +57,11 @@ struct TrainingAttendanceView: View {
         ScrollView {
             // Summary strip (compact)
             HStack(spacing: 0) {
-                summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: .blue)
-                summaryCell("Absent",  count: statusMap.values.filter { $0 != .present }.count, color: Color(.secondaryLabel))
+                summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: AppTheme.successGreen)
+                summaryCell("Absent",  count: statusMap.values.filter { $0 != .present }.count, color: AppTheme.neutralGray)
             }
             .padding(.vertical, 10)
-            .background(Color(.systemGroupedBackground))
+            .background(AppTheme.skyBlue)
 
             if players.isEmpty {
                 Text("No players in this group.")
@@ -82,7 +85,7 @@ struct TrainingAttendanceView: View {
                 .padding(.vertical, 12)
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(AppTheme.skyBlue)
     }
 
     private var detailListView: some View {
@@ -91,10 +94,10 @@ struct TrainingAttendanceView: View {
             if !statusMap.isEmpty {
                 Section {
                     HStack(spacing: 0) {
-                        summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: .green)
-                        summaryCell("Absent",  count: statusMap.values.filter { $0 == .absent  }.count, color: .red)
-                        summaryCell("Late",    count: statusMap.values.filter { $0 == .late    }.count, color: .orange)
-                        summaryCell("Excused", count: statusMap.values.filter { $0 == .excused }.count, color: .blue)
+                        summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: AppTheme.successGreen)
+                        summaryCell("Absent",  count: statusMap.values.filter { $0 == .absent  }.count, color: AppTheme.dangerRed)
+                        summaryCell("Late",    count: statusMap.values.filter { $0 == .late    }.count, color: AppTheme.warningAmber)
+                        summaryCell("Excused", count: statusMap.values.filter { $0 == .excused }.count, color: AppTheme.activeBlue)
                     }
                 }
             }
@@ -130,6 +133,7 @@ struct TrainingAttendanceView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
     }
 
     // MARK: - Sub-views
@@ -201,7 +205,7 @@ struct AttendancePlayerRow: View {
             } label: {
                 Image(systemName: status == .present ? "checkmark.square.fill" : "square")
                     .font(.title3)
-                    .foregroundStyle(status == .present ? .blue : Color(.secondaryLabel))
+                    .foregroundStyle(status == .present ? AppTheme.activeBlue : Color(.secondaryLabel))
             }
             .buttonStyle(.plain)
             .sensoryFeedback(.impact, trigger: status)
@@ -281,9 +285,10 @@ struct QuickAttendanceRow: View {
             .padding(.horizontal, 18)
             .frame(maxWidth: .infinity, minHeight: 72)
             .background(
-                isPresent ? Color.blue : Color(.secondarySystemGroupedBackground),
+                isPresent ? AppTheme.courtBlue : AppTheme.cardSurface,
                 in: .rect(cornerRadius: 14)
             )
+            .shadow(color: Color.black.opacity(0.04), radius: 4, y: 2)
             .contentShape(.rect(cornerRadius: 14))
         }
         .buttonStyle(.plain)

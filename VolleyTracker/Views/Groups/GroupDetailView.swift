@@ -33,9 +33,12 @@ struct GroupDetailView: View {
                 FeeOverviewView(group: group)
             }
         }
+        .background(AppTheme.skyBlue)
         .navigationTitle(group.name)
         .navigationBarTitleDisplayMode(.large)
+        .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search players")
     }
 }

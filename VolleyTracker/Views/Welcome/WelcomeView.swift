@@ -39,23 +39,21 @@ struct WelcomeView: View {
                     VStack(spacing: 12) {
                         NavigationLink(destination: CreateAccountView()) {
                             Text("Get Started")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
+                                .font(.body.weight(.semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .background(AppTheme.courtBlue)
+                                .cornerRadius(14)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
-                        .clipShape(.rect(cornerRadius: 14))
 
                         NavigationLink(destination: LoginView()) {
                             Text("I Already Have an Account")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
+                                .font(.body.weight(.medium))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(14)
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.blue)
-                        .clipShape(.rect(cornerRadius: 14))
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 48)

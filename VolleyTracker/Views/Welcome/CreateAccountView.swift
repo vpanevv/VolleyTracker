@@ -17,12 +17,22 @@ struct CreateAccountView: View {
                 TextField("Your Name", text: $name)
                     .textContentType(.name)
                 TextField("Club / Organization", text: $club)
+            } header: {
+                Text("Coach Details")
+                    .foregroundColor(AppTheme.courtBlueLite)
+                    .font(.subheadline.weight(.semibold))
+                    .textCase(nil)
             } footer: {
                 Text("These are the only details needed to set up your coach profile.")
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(AppTheme.skyBlue)
         .navigationTitle("Create Account")
         .navigationBarTitleDisplayMode(.large)
+        .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
             Button(action: createAccount) {
                 Text("Get Started")
@@ -31,7 +41,7 @@ struct CreateAccountView: View {
                     .frame(height: 50)
             }
             .buttonStyle(.borderedProminent)
-            .tint(.blue)
+            .tint(AppTheme.activeBlue)
             .clipShape(.rect(cornerRadius: 14))
             .disabled(!canSubmit)
             .padding(.horizontal, 24)

@@ -24,7 +24,7 @@ struct AttendanceView: View {
                 } actions: {
                     Button("Start Session") { showingAddTraining = true }
                         .buttonStyle(.borderedProminent)
-                        .tint(.blue)
+                        .tint(AppTheme.activeBlue)
                 }
             } else {
                 List {
@@ -32,6 +32,7 @@ struct AttendanceView: View {
                         NavigationLink(destination: TrainingAttendanceView(session: session)) {
                             SessionRowView(session: session, totalPlayers: group.players.count)
                         }
+                        .listRowBackground(AppTheme.cardSurface)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) { delete(session) } label: {
                                 Label("Delete", systemImage: "trash")
@@ -40,6 +41,7 @@ struct AttendanceView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
             }
         }
         .toolbar {

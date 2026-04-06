@@ -31,14 +31,15 @@ struct PlayerListView: View {
                 } actions: {
                     Button("Add Player") { showingAdd = true }
                         .buttonStyle(.borderedProminent)
-                        .tint(.blue)
+                        .tint(AppTheme.activeBlue)
                 }
             } else {
                 List {
                     ForEach(players) { player in
                         NavigationLink(destination: PlayerDetailView(player: player, group: group)) {
-                            PlayerRowView(player: player)
+                            PlayerRowView(player: player, group: group)
                         }
+                        .listRowBackground(AppTheme.cardSurface)
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) { playerToDelete = player } label: {
                                 Label("Delete", systemImage: "trash")
@@ -46,11 +47,12 @@ struct PlayerListView: View {
                             Button { playerToEdit = player } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
-                            .tint(.blue)
+                            .tint(AppTheme.activeBlue)
                         }
                     }
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
             }
         }
         .toolbar {
@@ -94,7 +96,6 @@ struct PlayerListView: View {
     }
 
     private func delete(_ player: Player) {
-        // Clean up attendance records in all training sessions
         for session in group.trainingSessions {
             session.attendanceRecords.removeAll {
                 $0.player?.persistentModelID == player.persistentModelID
@@ -110,10 +111,22 @@ struct PlayerListView: View {
 
 struct PlayerRowView: View {
     let player: Player
+    let group: TeamGroup
+
+    private func hexToColor(_ hex: String) -> Color {
+        let s = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
+        var rgb: UInt64 = 0
+        Scanner(string: s).scanHexInt64(&rgb)
+        return Color(
+            red:   Double((rgb & 0xFF0000) >> 16) / 255,
+            green: Double((rgb & 0x00FF00) >>  8) / 255,
+            blue:  Double( rgb & 0x0000FF       ) / 255
+        )
+    }
 
     var body: some View {
         HStack(spacing: 12) {
-            PlayerAvatarView(photoData: player.photoData, name: player.fullName, size: 44)
+            PlayerAvatarView(photoData: player.photoData, name: player.fullName, size: 44, color: hexToColor(group.colorHex))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(player.fullName)
@@ -127,7 +140,7 @@ struct PlayerRowView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.blue, in: .capsule)
+                            .background(hexToColor(group.colorHex), in: .capsule)
                     }
                     if player.position != .unknown {
                         Text(player.position.rawValue)

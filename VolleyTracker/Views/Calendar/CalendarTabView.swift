@@ -68,7 +68,7 @@ struct CalendarTabView: View {
                                 .font(.subheadline.weight(.semibold))
                         }
                         .buttonStyle(.bordered)
-                        .tint(.blue)
+                        .tint(AppTheme.activeBlue)
                         .padding(.horizontal)
                     }
 
@@ -76,9 +76,11 @@ struct CalendarTabView: View {
                 }
                 .padding(.top, 8)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(AppTheme.skyBlue)
             .navigationTitle("Calendar")
+            .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $showingAdd) {
                 AddTrainingView(groups: coach.groups, prefilledDate: selectedDate)
             }
@@ -101,7 +103,6 @@ struct MonthCalendarView: View {
         let start = calendar.startOfMonth(for: displayedMonth)
         guard let range = calendar.range(of: .day, in: .month, for: start) else { return [] }
 
-        // weekday: 1=Sun,2=Mon,...,7=Sat → Monday-first offset: (weekday + 5) % 7
         let weekday = calendar.component(.weekday, from: start)
         let offset = (weekday + 5) % 7
 
@@ -122,7 +123,7 @@ struct MonthCalendarView: View {
                     Image(systemName: "chevron.left")
                         .fontWeight(.semibold)
                 }
-                .foregroundStyle(.blue)
+                .foregroundStyle(AppTheme.activeBlue)
 
                 Spacer()
 
@@ -136,7 +137,7 @@ struct MonthCalendarView: View {
                     Image(systemName: "chevron.right")
                         .fontWeight(.semibold)
                 }
-                .foregroundStyle(.blue)
+                .foregroundStyle(AppTheme.activeBlue)
             }
             .padding(.horizontal)
 
@@ -176,7 +177,8 @@ struct MonthCalendarView: View {
             .padding(.horizontal, 8)
         }
         .padding(.vertical, 12)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
+        .background(AppTheme.cardSurface, in: .rect(cornerRadius: 16))
+        .shadow(color: Color.black.opacity(0.04), radius: 4, y: 2)
         .padding(.horizontal)
     }
 
@@ -205,15 +207,15 @@ struct CalendarDayCell: View {
                 .font(.callout)
                 .fontWeight(isToday ? .bold : .regular)
                 .frame(width: 36, height: 36)
-                .background(isSelected ? Color.blue : Color.clear, in: .circle)
+                .background(isSelected ? AppTheme.activeBlue : Color.clear, in: .circle)
                 .foregroundStyle(
                     isSelected ? .white :
-                    isToday    ? .blue  :
+                    isToday    ? AppTheme.activeBlue :
                     Color(.label)
                 )
 
             Circle()
-                .fill(hasTraining ? (isSelected ? Color.white.opacity(0.8) : Color.blue) : Color.clear)
+                .fill(hasTraining ? (isSelected ? Color.white.opacity(0.8) : AppTheme.activeBlue) : Color.clear)
                 .frame(width: 5, height: 5)
         }
         .frame(maxWidth: .infinity)
@@ -230,9 +232,9 @@ struct TrainingCard: View {
         HStack(spacing: 14) {
             Image(systemName: "figure.volleyball")
                 .font(.title3)
-                .foregroundStyle(.blue)
+                .foregroundStyle(AppTheme.courtBlueLite)
                 .frame(width: 44, height: 44)
-                .background(Color.blue.opacity(0.1), in: .rect(cornerRadius: 10))
+                .background(AppTheme.activeBlue.opacity(0.1), in: .rect(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(session.group?.name ?? "Group")
@@ -247,7 +249,7 @@ struct TrainingCard: View {
 
             if session.attendanceTaken {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(AppTheme.successGreen)
             }
 
             Image(systemName: "chevron.right")
@@ -255,7 +257,8 @@ struct TrainingCard: View {
                 .foregroundStyle(Color(.tertiaryLabel))
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+        .background(AppTheme.cardSurface, in: .rect(cornerRadius: 12))
+        .shadow(color: Color.black.opacity(0.04), radius: 4, y: 2)
         .padding(.horizontal)
     }
 }

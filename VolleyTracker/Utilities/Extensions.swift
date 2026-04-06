@@ -49,10 +49,10 @@ extension AttendanceStatus {
 
     var color: Color {
         switch self {
-        case .present: return .green
-        case .absent:  return .red
-        case .late:    return .orange
-        case .excused: return .blue
+        case .present: return AppTheme.successGreen
+        case .absent:  return AppTheme.dangerRed
+        case .late:    return AppTheme.warningAmber
+        case .excused: return AppTheme.activeBlue
         }
     }
 }
@@ -70,9 +70,9 @@ extension FeeStatus {
 
     var color: Color {
         switch self {
-        case .paid:    return .green
-        case .unpaid:  return .red
-        case .partial: return .orange
+        case .paid:    return AppTheme.successGreen
+        case .unpaid:  return AppTheme.dangerRed
+        case .partial: return AppTheme.warningAmber
         }
     }
 
@@ -108,6 +108,7 @@ struct PlayerAvatarView: View {
     let photoData: Data?
     let name: String
     let size: CGFloat
+    var color: Color = AppTheme.courtBlueLite
 
     private var initials: String {
         let parts = name.split(separator: " ")
@@ -122,7 +123,7 @@ struct PlayerAvatarView: View {
                     .scaledToFill()
             } else {
                 ZStack {
-                    Color.blue
+                    color
                     Text(initials.isEmpty ? "?" : initials)
                         .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white)

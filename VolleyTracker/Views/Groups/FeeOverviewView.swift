@@ -90,7 +90,7 @@ struct FeeOverviewView: View {
             HStack(spacing: 8) {
                 Image(systemName: "eurosign.circle.fill")
                     .font(.title3)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(AppTheme.activeBlue)
                 Text("To Collect · \(monthLabel)")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color(.label))
@@ -103,7 +103,7 @@ struct FeeOverviewView: View {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(formatEuro(outstandingTotal))
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(outstandingTotal > 0 ? Color.orange : Color.green)
+                    .foregroundStyle(outstandingTotal > 0 ? AppTheme.warningAmber : AppTheme.successGreen)
                 Text("outstanding")
                     .font(.subheadline)
                     .foregroundStyle(Color(.secondaryLabel))
@@ -121,13 +121,13 @@ struct FeeOverviewView: View {
                 let fraction = expectedTotal > 0 ? min(1, collectedTotal / expectedTotal) : 0
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color(.tertiarySystemFill))
-                    Capsule().fill(Color.green).frame(width: geo.size.width * fraction)
+                    Capsule().fill(AppTheme.successGreen).frame(width: geo.size.width * fraction)
                 }
             }
             .frame(height: 6)
         }
         .padding(14)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+        .background(AppTheme.cardSurface, in: .rect(cornerRadius: 12))
     }
 
     var body: some View {
@@ -166,7 +166,7 @@ struct FeeOverviewView: View {
 
                             Toggle("Unpaid only", isOn: $unpaidOnly)
                                 .toggleStyle(.button)
-                                .tint(.red)
+                                .tint(AppTheme.dangerRed)
                                 .font(.subheadline)
                         }
                         .padding(.horizontal)
@@ -213,7 +213,7 @@ struct FeeOverviewView: View {
                         .foregroundStyle(Color(.secondaryLabel))
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+                        .background(AppTheme.cardSurface, in: .rect(cornerRadius: 12))
                         .padding(.horizontal)
                         .padding(.top, 16)
                         .padding(.bottom, 32)
@@ -273,7 +273,7 @@ struct FeePlayerRow: View {
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 4)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 8))
+        .background(AppTheme.cardSurface, in: .rect(cornerRadius: 8))
     }
 }
 
@@ -295,7 +295,7 @@ struct UnpaidThisMonthSection: View {
                 HStack(spacing: 10) {
                     Image(systemName: unpaid.isEmpty ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                         .font(.title3)
-                        .foregroundStyle(unpaid.isEmpty ? .green : .orange)
+                        .foregroundStyle(unpaid.isEmpty ? AppTheme.successGreen : AppTheme.warningAmber)
 
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Unpaid This Month")
@@ -314,7 +314,7 @@ struct UnpaidThisMonthSection: View {
                         .frame(minWidth: 32, minHeight: 28)
                         .padding(.horizontal, 8)
                         .background(
-                            (unpaid.isEmpty ? Color.green : Color.red),
+                            (unpaid.isEmpty ? AppTheme.successGreen : AppTheme.dangerRed),
                             in: .capsule
                         )
 
@@ -343,11 +343,11 @@ struct UnpaidThisMonthSection: View {
                 }
             }
         }
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+        .background(AppTheme.cardSurface, in: .rect(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(
-                    (unpaid.isEmpty ? Color.green : Color.orange).opacity(0.3),
+                    (unpaid.isEmpty ? AppTheme.successGreen : AppTheme.warningAmber).opacity(0.3),
                     lineWidth: 1
                 )
         )
@@ -383,7 +383,7 @@ struct UnpaidPlayerRow: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color.green, in: .capsule)
+                    .background(AppTheme.successGreen, in: .capsule)
             }
             .buttonStyle(.plain)
         }
