@@ -10,13 +10,6 @@ struct EditProfileView: View {
     @State private var photoData: Data?
     @State private var photoItem: PhotosPickerItem?
 
-    private func themedHeader(_ text: String) -> some View {
-        Text(text)
-            .foregroundColor(AppTheme.courtBlueLite)
-            .font(.subheadline.weight(.semibold))
-            .textCase(nil)
-    }
-
     var body: some View {
         NavigationStack {
             Form {
@@ -28,8 +21,8 @@ struct EditProfileView: View {
                                 .overlay(alignment: .bottomTrailing) {
                                     Image(systemName: "pencil.circle.fill")
                                         .font(.title3)
-                                        .foregroundStyle(AppTheme.activeBlue)
-                                        .background(AppTheme.cardSurface, in: .circle)
+                                        .foregroundStyle(.blue)
+                                        .background(Color(.systemBackground), in: .circle)
                                 }
                         }
                         .onChange(of: photoItem) { _, item in
@@ -44,19 +37,14 @@ struct EditProfileView: View {
                     .padding(.vertical, 8)
                 }
 
-                Section {
+                Section("Profile") {
                     TextField("Your Name", text: $name)
                         .textContentType(.name)
                     TextField("Club / Organization", text: $club)
-                } header: { themedHeader("Profile") }
+                }
             }
-            .scrollContentBackground(.hidden)
-            .background(AppTheme.skyBlue)
             .navigationTitle("Edit Profile")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

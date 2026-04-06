@@ -20,18 +20,13 @@ struct LoginView: View {
             if !errorMessage.isEmpty {
                 Section {
                     Text(errorMessage)
-                        .foregroundStyle(AppTheme.dangerRed)
+                        .foregroundStyle(.red)
                         .font(.subheadline)
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(AppTheme.skyBlue)
         .navigationTitle("Welcome Back")
         .navigationBarTitleDisplayMode(.large)
-        .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
             Button(action: login) {
                 Text("Log In")
@@ -40,7 +35,7 @@ struct LoginView: View {
                     .frame(height: 50)
             }
             .buttonStyle(.borderedProminent)
-            .tint(AppTheme.activeBlue)
+            .tint(.blue)
             .clipShape(.rect(cornerRadius: 14))
             .disabled(name.trimmed.isEmpty)
             .padding(.horizontal, 24)

@@ -30,43 +30,38 @@ struct AddEditGroupView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
+                Section("Group Info") {
                     TextField("Name (e.g. U16 Girls)", text: $name)
                     TextField("Age category (optional)", text: $ageCategory)
-                } header: {
-                    Text("Group Info")
-                        .foregroundColor(AppTheme.courtBlueLite)
-                        .font(.subheadline.weight(.semibold))
-                        .textCase(nil)
                 }
 
-                Section {
+                Section("Color") {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 10) {
                         ForEach(colors, id: \.self) { hex in
                             colorSwatch(hex)
                         }
                     }
                     .padding(.vertical, 4)
-                } header: { themedHeader("Color") }
+                }
 
-                Section {
+                Section("Group Type") {
                     HStack(spacing: 16) {
                         genderButton(emojiValue: "👦", label: "Boys / Men")
                         genderButton(emojiValue: "👧", label: "Girls / Women")
                     }
                     .padding(.vertical, 4)
-                } header: { themedHeader("Group Type") }
+                }
 
-                Section {
+                Section("Monthly Fee") {
                     HStack {
                         TextField("0", text: $monthlyFeeText)
                             .keyboardType(.decimalPad)
                         Text("€ / player")
                             .foregroundStyle(Color(.secondaryLabel))
                     }
-                } header: { themedHeader("Monthly Fee") }
+                }
 
-                Section {
+                Section("Training Schedule") {
                     HStack(spacing: 4) {
                         ForEach(0..<7) { d in
                             dayButton(d)
@@ -78,15 +73,10 @@ struct AddEditGroupView: View {
                     if hasTime {
                         DatePicker("Time", selection: $trainingTime, displayedComponents: .hourAndMinute)
                     }
-                } header: { themedHeader("Training Schedule") }
+                }
             }
-            .scrollContentBackground(.hidden)
-            .background(AppTheme.skyBlue)
             .navigationTitle(isEditing ? "Edit Group" : "New Group")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
@@ -96,15 +86,6 @@ struct AddEditGroupView: View {
             }
             .onAppear(perform: loadIfEditing)
         }
-    }
-
-    // MARK: - Helpers
-
-    private func themedHeader(_ text: String) -> some View {
-        Text(text)
-            .foregroundColor(AppTheme.courtBlueLite)
-            .font(.subheadline.weight(.semibold))
-            .textCase(nil)
     }
 
     // MARK: Sub-views

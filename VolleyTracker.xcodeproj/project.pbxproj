@@ -29,7 +29,6 @@
 		B9066309C8304DBC494A7401 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71ADDF5FABCF6943D273396 /* MainTabView.swift */; };
 		CB23EBFFF0C746928963594C /* VolleyTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */; };
 		DE7CD03D6E29806353B74EB2 /* AttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E34C185681EB16B1874BF72 /* AttendanceView.swift */; };
-		E7A040A8BBEAA99E5163816A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */; };
 		E7EE503BBD477B3244B30013 /* TrainingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C465D1F1CBFB0D035218403B /* TrainingSession.swift */; };
 		ED97B628441FB8E6FF018049 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB35B120B4601FE39F5755E3 /* Assets.xcassets */; };
 		F606BAA03F4D549FED0C258E /* GroupsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5894418978953F2B5C476DB7 /* GroupsListView.swift */; };
@@ -42,7 +41,6 @@
 		2BDB5EF2996AA7A3D4D19FBF /* TrainingAttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingAttendanceView.swift; sourceTree = "<group>"; };
 		474773EECE282536FC9F09CA /* CalendarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTabView.swift; sourceTree = "<group>"; };
 		57EA3BB3F860F7DD62F90EB1 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
-		5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		5894418978953F2B5C476DB7 /* GroupsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsListView.swift; sourceTree = "<group>"; };
 		60183628B3AE7433C02F22CB /* FeeOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeOverviewView.swift; sourceTree = "<group>"; };
 		6B18C2949D9F60938D85332E /* AddTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTrainingView.swift; sourceTree = "<group>"; };
@@ -102,7 +100,6 @@
 		3E0827D1BD9272263BCAC84C /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */,
 				B14F147008E5857E6F9466A9 /* Extensions.swift */,
 			);
 			path = Utilities;
@@ -247,7 +244,6 @@
 				7F33280EB94D32647ED99A35 /* AddEditGroupView.swift in Sources */,
 				5E599F6481D31CDB62DE815C /* AddEditPlayerView.swift in Sources */,
 				453B69C9880C25F519F25E1B /* AddTrainingView.swift in Sources */,
-				E7A040A8BBEAA99E5163816A /* AppTheme.swift in Sources */,
 				F8A6E732A07E9BFCB7C4D353 /* AttendanceRecord.swift in Sources */,
 				DE7CD03D6E29806353B74EB2 /* AttendanceView.swift in Sources */,
 				035A718A9EF8629124181C3D /* CalendarTabView.swift in Sources */,

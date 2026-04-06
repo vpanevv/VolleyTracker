@@ -22,13 +22,6 @@ struct AddEditPlayerView: View {
 
     private var isEditing: Bool { player != nil }
 
-    private func themedHeader(_ text: String) -> some View {
-        Text(text)
-            .foregroundColor(AppTheme.courtBlueLite)
-            .font(.subheadline.weight(.semibold))
-            .textCase(nil)
-    }
-
     var body: some View {
         NavigationStack {
             Form {
@@ -41,8 +34,8 @@ struct AddEditPlayerView: View {
                                 .overlay(alignment: .bottomTrailing) {
                                     Image(systemName: "pencil.circle.fill")
                                         .font(.title3)
-                                        .foregroundStyle(AppTheme.activeBlue)
-                                        .background(AppTheme.cardSurface, in: .circle)
+                                        .foregroundStyle(.blue)
+                                        .background(Color(.systemBackground), in: .circle)
                                 }
                         }
                         .onChange(of: photoItem) { _, item in
@@ -57,7 +50,7 @@ struct AddEditPlayerView: View {
                     .padding(.vertical, 8)
                 }
 
-                Section {
+                Section("Player Info") {
                     TextField("Full name", text: $fullName)
                         .textContentType(.name)
 
@@ -83,28 +76,23 @@ struct AddEditPlayerView: View {
                             .datePickerStyle(.wheel)
                             .labelsHidden()
                     }
-                } header: { themedHeader("Player Info") }
+                }
 
-                Section {
+                Section("Parent / Guardian") {
                     TextField("Name (optional)", text: $parentName)
                         .textContentType(.name)
                     TextField("Phone (optional)", text: $parentPhone)
                         .textContentType(.telephoneNumber)
                         .keyboardType(.phonePad)
-                } header: { themedHeader("Parent / Guardian") }
+                }
 
-                Section {
+                Section("Notes") {
                     TextEditor(text: $notes)
                         .frame(minHeight: 80)
-                } header: { themedHeader("Notes") }
+                }
             }
-            .scrollContentBackground(.hidden)
-            .background(AppTheme.skyBlue)
             .navigationTitle(isEditing ? "Edit Player" : "New Player")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

@@ -28,7 +28,6 @@ struct GroupsListView: View {
                             NavigationLink(destination: GroupDetailView(group: group)) {
                                 GroupRowView(group: group)
                             }
-                            .listRowBackground(AppTheme.cardSurface)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) { groupToDelete = group } label: {
                                     Label("Delete", systemImage: "trash")
@@ -36,7 +35,7 @@ struct GroupsListView: View {
                                 Button { groupToEdit = group } label: {
                                     Label("Edit", systemImage: "pencil")
                                 }
-                                .tint(AppTheme.activeBlue)
+                                .tint(.blue)
                             }
                             .contextMenu {
                                 Button { groupToEdit = group } label: {
@@ -49,14 +48,10 @@ struct GroupsListView: View {
                         }
                     }
                     .listStyle(.insetGrouped)
-                    .scrollContentBackground(.hidden)
                 }
             }
-            .background(AppTheme.skyBlue)
             .navigationTitle("Groups")
-            .toolbarBackground(AppTheme.courtBlue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingAdd = true } label: {
