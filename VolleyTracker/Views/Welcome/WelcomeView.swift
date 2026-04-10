@@ -10,55 +10,52 @@ struct WelcomeView: View {
                     .scaledToFill()
                     .ignoresSafeArea()
 
-                // Layer 2: Light dark overlay — no blur
-                Color.black.opacity(0.30)
+                // Layer 2: Dark overlay — no blur
+                Color.black.opacity(0.45)
                     .ignoresSafeArea()
 
-                // Layer 3: Content
+                // Layer 3: Content — grouped slightly above center
                 VStack(spacing: 0) {
                     Spacer()
-
-                    VStack(spacing: 20) {
-                        Image(systemName: "sportscourt.fill")
-                            .font(.system(size: 80))
-                            .foregroundStyle(.white)
-
-                        VStack(spacing: 8) {
-                            Text("VolleyTracker")
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundStyle(.white)
-
-                            Text("Track your team. Own your game.")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.75))
-                        }
-                    }
-
                     Spacer()
 
-                    VStack(spacing: 12) {
+                    Image(systemName: "sportscourt.fill")
+                        .font(.system(size: 80))
+                        .foregroundStyle(.white)
+                        .padding(.bottom, 16)
+
+                    Text("VolleyTracker")
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.bottom, 4)
+
+                    Text("Track your team. Own your game.")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.7))
+                        .padding(.bottom, 40)
+
+                    VStack(spacing: 14) {
                         NavigationLink(destination: CreateAccountView()) {
                             Text("Get Started")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity, minHeight: 52)
+                                .background(Color.blue)
+                                .clipShape(.rect(cornerRadius: 26))
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
-                        .clipShape(.rect(cornerRadius: 14))
 
                         NavigationLink(destination: LoginView()) {
                             Text("I Already Have an Account")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity, minHeight: 52)
+                                .background(.ultraThinMaterial)
+                                .clipShape(.rect(cornerRadius: 26))
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.blue)
-                        .clipShape(.rect(cornerRadius: 14))
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 48)
+                    .padding(.horizontal, 40)
+
+                    Spacer()
                 }
             }
         }
