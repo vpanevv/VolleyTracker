@@ -4,27 +4,24 @@ import SwiftData
 struct FeeOverviewView: View {
     let group: TeamGroup
     @Environment(\.modelContext) private var modelContext
-    @Query private var allGroups: [TeamGroup]
 
     @State private var year = Calendar.current.component(.year, from: Date())
     @State private var unpaidOnly = false
     @State private var showUnpaidSummary = true
+    @State private var exportedPDFURL: URL?
+    @State private var exportError: String?
 
     private var currentMonth: Int { Calendar.current.component(.month, from: Date()) }
     private var currentYear: Int { Calendar.current.component(.year, from: Date()) }
 
-    /// Every player across every group who hasn't paid for the current month/year.
-    private var unpaidThisMonth: [(player: Player, group: TeamGroup)] {
-        var results: [(Player, TeamGroup)] = []
-        for g in allGroups {
-            for p in g.players {
-                let rec = p.feeRecords.first { $0.month == currentMonth && $0.year == currentYear }
-                if rec?.status != .paid {
-                    results.append((p, g))
-                }
+    /// Players in THIS group who haven't paid for the current month/year.
+    private var unpaidThisMonth: [Player] {
+        group.players
+            .filter { player in
+                let rec = player.feeRecords.first { $0.month == currentMonth && $0.year == currentYear }
+                return rec?.status != .paid
             }
-        }
-        return results.sorted { $0.0.fullName < $1.0.fullName }
+            .sorted { $0.fullName < $1.fullName }
     }
 
     private var visiblePlayers: [Player] {
@@ -33,6 +30,15 @@ struct FeeOverviewView: View {
         return sorted.filter { player in
             let rec = player.feeRecords.first { $0.month == currentMonth && $0.year == year }
             return rec?.status != .paid
+        }
+    }
+
+    private func exportPDF() {
+        do {
+            let url = try FeeReportPDF.generate(for: group)
+            exportedPDFURL = url
+        } catch {
+            exportError = error.localizedDescription
         }
     }
 
@@ -141,9 +147,28 @@ struct FeeOverviewView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
-                        // Unpaid This Month (cross-group)
+                        // Export PDF button
+                        Button(action: exportPDF) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.subheadline.weight(.semibold))
+                                Text("Export Collected Fees (PDF)")
+                                    .font(.subheadline.weight(.semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.blue, in: .rect(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal)
+                        .padding(.top, 12)
+                        .padding(.bottom, 8)
+
+                        // Unpaid This Month (this group only)
                         UnpaidThisMonthSection(
                             unpaid: unpaidThisMonth,
+                            groupName: group.name,
                             monthName: FeeRecord.monthNames[currentMonth - 1],
                             year: currentYear,
                             isExpanded: $showUnpaidSummary,
@@ -221,7 +246,26 @@ struct FeeOverviewView: View {
                 }
             }
         }
+        .sheet(item: Binding(
+            get: { exportedPDFURL.map { IdentifiedURL(url: $0) } },
+            set: { exportedPDFURL = $0?.url }
+        )) { wrapper in
+            ShareSheet(items: [wrapper.url])
+        }
+        .alert("Export Failed", isPresented: Binding(
+            get: { exportError != nil },
+            set: { if !$0 { exportError = nil } }
+        )) {
+            Button("OK", role: .cancel) { exportError = nil }
+        } message: {
+            Text(exportError ?? "")
+        }
     }
+}
+
+private struct IdentifiedURL: Identifiable {
+    let url: URL
+    var id: String { url.absoluteString }
 }
 
 struct FeePlayerRow: View {
@@ -280,7 +324,8 @@ struct FeePlayerRow: View {
 // MARK: - UnpaidThisMonthSection
 
 struct UnpaidThisMonthSection: View {
-    let unpaid: [(player: Player, group: TeamGroup)]
+    let unpaid: [Player]
+    let groupName: String
     let monthName: String
     let year: Int
     @Binding var isExpanded: Bool
@@ -301,7 +346,7 @@ struct UnpaidThisMonthSection: View {
                         Text("Unpaid This Month")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(Color(.label))
-                        Text("\(monthName) \(String(year)) · all groups")
+                        Text("\(monthName) \(String(year)) · \(groupName)")
                             .font(.caption)
                             .foregroundStyle(Color(.secondaryLabel))
                     }
@@ -330,11 +375,10 @@ struct UnpaidThisMonthSection: View {
             if isExpanded && !unpaid.isEmpty {
                 Divider().padding(.leading, 12)
                 VStack(spacing: 0) {
-                    ForEach(Array(unpaid.enumerated()), id: \.offset) { idx, entry in
+                    ForEach(Array(unpaid.enumerated()), id: \.offset) { idx, player in
                         UnpaidPlayerRow(
-                            player: entry.player,
-                            group: entry.group,
-                            onMarkPaid: { onMarkPaid(entry.player) }
+                            player: player,
+                            onMarkPaid: { onMarkPaid(player) }
                         )
                         if idx < unpaid.count - 1 {
                             Divider().padding(.leading, 12)
@@ -356,24 +400,15 @@ struct UnpaidThisMonthSection: View {
 
 struct UnpaidPlayerRow: View {
     let player: Player
-    let group: TeamGroup
     let onMarkPaid: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
             PlayerAvatarView(photoData: player.photoData, name: player.fullName, size: 34)
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(player.fullName)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Color(.label))
-                HStack(spacing: 4) {
-                    Text(group.emoji).font(.caption2)
-                    Text(group.name)
-                        .font(.caption)
-                        .foregroundStyle(Color(.secondaryLabel))
-                }
-            }
+            Text(player.fullName)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Color(.label))
 
             Spacer()
 
