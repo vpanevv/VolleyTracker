@@ -33,52 +33,88 @@ struct CalendarTabView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Month calendar
-                    MonthCalendarView(
-                        selectedDate: $selectedDate,
-                        displayedMonth: $displayedMonth,
-                        markedDays: markedDays
-                    )
+            ZStack {
+                AuroraBackground()
 
-                    // Selected day trainings
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(selectedDate, style: .date)
-                            .font(.headline)
-                            .foregroundStyle(Color(.label))
-                            .padding(.horizontal)
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // AI tag row
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.footnote.weight(.bold))
+                            Text("Your training week")
+                                .font(.footnote.weight(.bold))
+                                .tracking(0.5)
+                        }
+                        .heroGradientForeground()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 4)
 
-                        if trainingsForSelectedDate.isEmpty {
-                            Text("No trainings scheduled.")
-                                .font(.subheadline)
-                                .foregroundStyle(Color(.secondaryLabel))
+                        // Month calendar
+                        MonthCalendarView(
+                            selectedDate: $selectedDate,
+                            displayedMonth: $displayedMonth,
+                            markedDays: markedDays
+                        )
+
+                        // Selected day trainings
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(selectedDate, style: .date)
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(Color(.label))
                                 .padding(.horizontal)
-                        } else {
-                            ForEach(trainingsForSelectedDate) { session in
-                                NavigationLink(destination: TrainingAttendanceView(session: session)) {
-                                    TrainingCard(session: session)
+
+                            if trainingsForSelectedDate.isEmpty {
+                                VStack(spacing: 6) {
+                                    Image(systemName: "moon.zzz.fill")
+                                        .font(.title2)
+                                        .heroGradientForeground()
+                                    Text("No trainings scheduled")
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(Color(.secondaryLabel))
                                 }
-                                .buttonStyle(.plain)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 24)
+                                .background(.ultraThinMaterial,
+                                            in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .strokeBorder(AppTheme.softGradient.opacity(0.4), lineWidth: 1)
+                                )
+                                .padding(.horizontal)
+                            } else {
+                                ForEach(trainingsForSelectedDate) { session in
+                                    NavigationLink(destination: TrainingAttendanceView(session: session)) {
+                                        TrainingCard(session: session)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
                             }
-                        }
 
-                        Button { showingAdd = true } label: {
-                            Label("Add Training", systemImage: "plus")
+                            Button { showingAdd = true } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "plus.circle.fill")
+                                    Text("Add Training")
+                                }
                                 .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 18)
+                                .padding(.vertical, 12)
+                                .background(AppTheme.heroGradient, in: Capsule())
+                                .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35),
+                                        radius: 14, x: 0, y: 8)
+                            }
+                            .padding(.horizontal)
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.blue)
-                        .padding(.horizontal)
-                    }
 
-                    Spacer(minLength: 32)
+                        Spacer(minLength: 32)
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
             }
-            .background(Color(.systemGroupedBackground))
             .navigationTitle("Calendar")
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingAdd) {
                 AddTrainingView(groups: coach.groups, prefilledDate: selectedDate)
             }
@@ -119,24 +155,24 @@ struct MonthCalendarView: View {
             // Month navigation
             HStack {
                 Button { changeMonth(-1) } label: {
-                    Image(systemName: "chevron.left")
-                        .fontWeight(.semibold)
+                    Image(systemName: "chevron.left.circle.fill")
+                        .font(.title3)
                 }
-                .foregroundStyle(.blue)
+                .heroGradientForeground()
 
                 Spacer()
 
                 Text(displayedMonth, format: .dateTime.month(.wide).year())
-                    .font(.headline)
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(Color(.label))
 
                 Spacer()
 
                 Button { changeMonth(1) } label: {
-                    Image(systemName: "chevron.right")
-                        .fontWeight(.semibold)
+                    Image(systemName: "chevron.right.circle.fill")
+                        .font(.title3)
                 }
-                .foregroundStyle(.blue)
+                .heroGradientForeground()
             }
             .padding(.horizontal)
 
@@ -175,8 +211,14 @@ struct MonthCalendarView: View {
             }
             .padding(.horizontal, 8)
         }
-        .padding(.vertical, 12)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(AppTheme.softGradient.opacity(0.55), lineWidth: 1)
+        )
+        .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.12),
+                radius: 24, x: 0, y: 12)
         .padding(.horizontal)
     }
 
@@ -200,24 +242,38 @@ struct CalendarDayCell: View {
     }
 
     var body: some View {
-        VStack(spacing: 2) {
-            Text(dayNumber)
-                .font(.callout)
-                .fontWeight(isToday ? .bold : .regular)
-                .frame(width: 36, height: 36)
-                .background(isSelected ? Color.blue : Color.clear, in: .circle)
-                .foregroundStyle(
-                    isSelected ? .white :
-                    isToday    ? .blue  :
-                    Color(.label)
-                )
+        VStack(spacing: 3) {
+            ZStack {
+                if isSelected {
+                    Circle()
+                        .fill(AppTheme.heroGradient)
+                        .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.5),
+                                radius: 10, x: 0, y: 6)
+                } else if isToday {
+                    Circle()
+                        .strokeBorder(AppTheme.heroGradient, lineWidth: 2)
+                }
+                Text(dayNumber)
+                    .font(.callout)
+                    .fontWeight(isSelected || isToday ? .bold : .regular)
+                    .foregroundStyle(
+                        isSelected ? AnyShapeStyle(Color.white)
+                                   : AnyShapeStyle(Color(.label))
+                    )
+            }
+            .frame(width: 38, height: 38)
 
             Circle()
-                .fill(hasTraining ? (isSelected ? Color.white.opacity(0.8) : Color.blue) : Color.clear)
+                .fill(
+                    hasTraining
+                        ? (isSelected ? AnyShapeStyle(Color.white.opacity(0.9))
+                                      : AnyShapeStyle(AppTheme.heroGradient))
+                        : AnyShapeStyle(Color.clear)
+                )
                 .frame(width: 5, height: 5)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 52)
+        .frame(height: 54)
     }
 }
 
@@ -228,11 +284,14 @@ struct TrainingCard: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: "figure.volleyball")
-                .font(.title3)
-                .foregroundStyle(.blue)
-                .frame(width: 44, height: 44)
-                .background(Color.blue.opacity(0.1), in: .rect(cornerRadius: 10))
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(AppTheme.heroGradient.opacity(0.18))
+                    .frame(width: 48, height: 48)
+                Image(systemName: "figure.volleyball")
+                    .font(.title3.weight(.semibold))
+                    .heroGradientForeground()
+            }
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(session.group?.name ?? "Group")
@@ -246,16 +305,29 @@ struct TrainingCard: View {
             Spacer()
 
             if session.attendanceTaken {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.title3)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.green, Color.mint],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             }
 
             Image(systemName: "chevron.right")
-                .font(.caption)
+                .font(.caption.weight(.bold))
                 .foregroundStyle(Color(.tertiaryLabel))
         }
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+        .padding(14)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(AppTheme.softGradient.opacity(0.4), lineWidth: 1)
+        )
+        .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.1),
+                radius: 14, x: 0, y: 6)
         .padding(.horizontal)
     }
 }
