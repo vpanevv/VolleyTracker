@@ -117,9 +117,29 @@ enum DebugSeed {
 struct LoggedInRootView: View {
     @Query private var coaches: [Coach]
     @AppStorage("isLoggedIn") private var isLoggedIn = false
+    @AppStorage("coachName") private var savedCoachName = ""
+
+    /// Resolve the active coach deterministically.
+    ///
+    /// Prefer the coach whose name matches `savedCoachName` (the account the
+    /// user actually created / logged into). Falling back to `.first` was
+    /// unsafe because `@Query` has no stable ordering — when multiple coach
+    /// rows exist in the store (e.g. leftovers from a previous install or
+    /// stale debug-seed data), a tab switch could silently swap the active
+    /// coach to a different row.
+    private var activeCoach: Coach? {
+        let trimmed = savedCoachName.trimmed
+        if !trimmed.isEmpty,
+           let match = coaches.first(where: {
+               $0.name.localizedCaseInsensitiveCompare(trimmed) == .orderedSame
+           }) {
+            return match
+        }
+        return coaches.first
+    }
 
     var body: some View {
-        if let coach = coaches.first {
+        if let coach = activeCoach {
             MainTabView(coach: coach)
         } else {
             // isLoggedIn=true but no coach in store — reset and show welcome
