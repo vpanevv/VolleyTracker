@@ -29,62 +29,192 @@ struct AddEditGroupView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Group Info") {
-                    TextField("Name (e.g. U16 Girls)", text: $name)
-                    TextField("Age category (optional)", text: $ageCategory)
-                }
+            ZStack {
+                AuroraBackground()
 
-                Section("Color") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 10) {
-                        ForEach(colors, id: \.self) { hex in
-                            colorSwatch(hex)
+                ScrollView {
+                    VStack(spacing: 22) {
+                        // Sparkle eyebrow
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.footnote.weight(.bold))
+                            Text(isEditing ? "Update group" : "Create new group")
+                                .font(.footnote.weight(.bold))
+                                .tracking(0.5)
                         }
-                    }
-                    .padding(.vertical, 4)
-                }
+                        .heroGradientForeground()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 4)
 
-                Section("Group Type") {
-                    HStack(spacing: 16) {
-                        genderButton(emojiValue: "👦", label: "Boys / Men")
-                        genderButton(emojiValue: "👧", label: "Girls / Women")
-                    }
-                    .padding(.vertical, 4)
-                }
-
-                Section("Monthly Fee") {
-                    HStack {
-                        TextField("0", text: $monthlyFeeText)
-                            .keyboardType(.decimalPad)
-                        Text("€ / player")
-                            .foregroundStyle(Color(.secondaryLabel))
-                    }
-                }
-
-                Section("Training Schedule") {
-                    HStack(spacing: 4) {
-                        ForEach(0..<7) { d in
-                            dayButton(d)
+                        // Group info
+                        themedSection("GROUP INFO") {
+                            VStack(spacing: 0) {
+                                ThemedTextField(icon: "textformat",
+                                                placeholder: "Name (e.g. U16 Girls)",
+                                                text: $name,
+                                                contentType: nil)
+                                Divider().padding(.leading, 54)
+                                ThemedTextField(icon: "number",
+                                                placeholder: "Age category (optional)",
+                                                text: $ageCategory,
+                                                contentType: nil)
+                            }
                         }
-                    }
 
-                    Toggle("Training time", isOn: $hasTime.animation())
+                        // Color
+                        themedSection("COLOR") {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6),
+                                      spacing: 14) {
+                                ForEach(colors, id: \.self) { hex in
+                                    colorSwatch(hex)
+                                }
+                            }
+                            .padding(16)
+                        }
 
-                    if hasTime {
-                        DatePicker("Time", selection: $trainingTime, displayedComponents: .hourAndMinute)
+                        // Group type
+                        themedSection("GROUP TYPE") {
+                            HStack(spacing: 12) {
+                                genderButton(emojiValue: "👦", label: "Boys / Men")
+                                genderButton(emojiValue: "👧", label: "Girls / Women")
+                            }
+                            .padding(16)
+                        }
+
+                        // Monthly fee
+                        themedSection("MONTHLY FEE") {
+                            HStack(spacing: 14) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .fill(AppTheme.heroGradient.opacity(0.18))
+                                        .frame(width: 36, height: 36)
+                                    Image(systemName: "eurosign.circle.fill")
+                                        .font(.footnote.weight(.bold))
+                                        .heroGradientForeground()
+                                }
+                                TextField("0", text: $monthlyFeeText)
+                                    .keyboardType(.decimalPad)
+                                    .font(.body)
+                                    .foregroundStyle(Color(.label))
+                                Text("€ / player")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color(.secondaryLabel))
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                        }
+
+                        // Training schedule
+                        themedSection("TRAINING SCHEDULE") {
+                            VStack(spacing: 14) {
+                                HStack(spacing: 6) {
+                                    ForEach(0..<7) { d in
+                                        dayButton(d)
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.top, 14)
+
+                                Divider().padding(.horizontal, 16)
+
+                                Toggle(isOn: $hasTime.animation()) {
+                                    HStack(spacing: 14) {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                .fill(AppTheme.heroGradient.opacity(0.18))
+                                                .frame(width: 36, height: 36)
+                                            Image(systemName: "clock.fill")
+                                                .font(.footnote.weight(.bold))
+                                                .heroGradientForeground()
+                                        }
+                                        Text("Training time")
+                                            .foregroundStyle(Color(.label))
+                                    }
+                                }
+                                .tint(Color(red: 0.24, green: 0.40, blue: 1.00))
+                                .padding(.horizontal, 16)
+
+                                if hasTime {
+                                    Divider().padding(.horizontal, 16)
+                                    HStack(spacing: 14) {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                .fill(AppTheme.heroGradient.opacity(0.18))
+                                                .frame(width: 36, height: 36)
+                                            Image(systemName: "clock.badge")
+                                                .font(.footnote.weight(.bold))
+                                                .heroGradientForeground()
+                                        }
+                                        Text("Time")
+                                            .foregroundStyle(Color(.label))
+                                        Spacer()
+                                        DatePicker("", selection: $trainingTime,
+                                                   displayedComponents: .hourAndMinute)
+                                            .labelsHidden()
+                                            .tint(Color(red: 0.24, green: 0.40, blue: 1.00))
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 14)
+                                } else {
+                                    Spacer().frame(height: 14)
+                                }
+                            }
+                        }
+
+                        Spacer(minLength: 24)
                     }
+                    .padding(.top, 8)
                 }
             }
             .navigationTitle(isEditing ? "Edit Group" : "New Group")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color(.secondaryLabel))
+                }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
-                        .disabled(name.trimmed.isEmpty)
+                    Button { save() } label: {
+                        Text("Save")
+                            .font(.footnote.weight(.bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 7)
+                            .background(AppTheme.heroGradient, in: Capsule())
+                            .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35),
+                                    radius: 10, x: 0, y: 5)
+                            .opacity(name.trimmed.isEmpty ? 0.5 : 1)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(name.trimmed.isEmpty)
                 }
             }
             .onAppear(perform: loadIfEditing)
+        }
+    }
+
+    // MARK: Themed section wrapper
+
+    @ViewBuilder
+    private func themedSection<Content: View>(_ title: String,
+                                              @ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ThemedSectionLabel(title)
+                .padding(.horizontal, 20)
+
+            content()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.ultraThinMaterial,
+                            in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(AppTheme.softGradient.opacity(0.55), lineWidth: 1)
+                )
+                .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.10),
+                        radius: 18, x: 0, y: 10)
+                .padding(.horizontal, 16)
         }
     }
 
@@ -97,52 +227,82 @@ struct AddEditGroupView: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } label: {
             VStack(spacing: 6) {
-                Text(emojiValue).font(.system(size: 48))
+                Text(emojiValue).font(.system(size: 44))
                 Text(label)
-                    .font(.caption.weight(.medium))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(selected ? .white : Color(.label))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 14)
             .background(
-                selected ? hexToColor(colorHex) : Color(.secondarySystemGroupedBackground),
-                in: .rect(cornerRadius: 12)
+                selected ? AnyShapeStyle(AppTheme.heroGradient)
+                         : AnyShapeStyle(Color.white.opacity(0.01)),
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(selected ? hexToColor(colorHex) : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(selected ? AnyShapeStyle(Color.clear)
+                                            : AnyShapeStyle(AppTheme.softGradient.opacity(0.5)),
+                                  lineWidth: 1)
             )
+            .shadow(color: selected
+                    ? Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35)
+                    : Color.clear,
+                    radius: 12, x: 0, y: 6)
         }
         .buttonStyle(.plain)
     }
 
     private func colorSwatch(_ hex: String) -> some View {
         let hexColor = hexToColor(hex)
-        return Circle()
-            .fill(hexColor)
-            .frame(height: 36)
-            .overlay {
-                if hex == colorHex {
-                    Image(systemName: "checkmark")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                }
+        let selected = hex == colorHex
+        return ZStack {
+            Circle()
+                .fill(hexColor)
+                .frame(width: 40, height: 40)
+                .overlay(
+                    Circle().strokeBorder(Color.white.opacity(0.6), lineWidth: selected ? 0 : 1)
+                )
+            if selected {
+                Circle()
+                    .strokeBorder(AppTheme.heroGradient, lineWidth: 3)
+                    .frame(width: 46, height: 46)
+                Image(systemName: "checkmark")
+                    .font(.caption.bold())
+                    .foregroundStyle(.white)
             }
-            .onTapGesture {
-                colorHex = hex
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            }
+        }
+        .shadow(color: hexColor.opacity(selected ? 0.5 : 0.15),
+                radius: selected ? 10 : 4, x: 0, y: 3)
+        .onTapGesture {
+            colorHex = hex
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
     }
 
     private func dayButton(_ d: Int) -> some View {
         let selected = selectedDays.contains(d)
         return Text(dayLetters[d])
-            .font(.caption.bold())
+            .font(.footnote.weight(.bold))
             .frame(maxWidth: .infinity)
-            .frame(height: 34)
-            .background(selected ? hexToColor(colorHex) : Color(.secondarySystemGroupedBackground),
-                        in: .circle)
+            .frame(height: 38)
+            .background(
+                selected ? AnyShapeStyle(AppTheme.heroGradient)
+                         : AnyShapeStyle(Color.white.opacity(0.01)),
+                in: Circle()
+            )
+            .overlay(
+                Circle().strokeBorder(
+                    selected ? AnyShapeStyle(Color.clear)
+                             : AnyShapeStyle(AppTheme.softGradient.opacity(0.5)),
+                    lineWidth: 1
+                )
+            )
             .foregroundStyle(selected ? .white : Color(.secondaryLabel))
+            .shadow(color: selected
+                    ? Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35)
+                    : Color.clear,
+                    radius: 8, x: 0, y: 4)
             .onTapGesture {
                 if selected { selectedDays.remove(d) } else { selectedDays.insert(d) }
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()

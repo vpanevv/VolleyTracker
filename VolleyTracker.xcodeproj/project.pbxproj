@@ -26,6 +26,7 @@
 		A8B1F25961370E2CCD4EEC54 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6DB0A2E9C80D5316D3EFFF /* Group.swift */; };
 		B3464C9FF1C1D0309B03FFF8 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14F147008E5857E6F9466A9 /* Extensions.swift */; };
 		AA11BB22CC33DD44EE550001 /* FeeReportPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550002 /* FeeReportPDF.swift */; };
+		AA11BB22CC33DD44EE550003 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550004 /* AppTheme.swift */; };
 		B7E11EC82C949F074E9BCB50 /* FeeOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60183628B3AE7433C02F22CB /* FeeOverviewView.swift */; };
 		B9066309C8304DBC494A7401 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71ADDF5FABCF6943D273396 /* MainTabView.swift */; };
 		CB23EBFFF0C746928963594C /* VolleyTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */; };
@@ -55,6 +56,7 @@
 		B0FD636187B38B382F991B93 /* VolleyTracker.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VolleyTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B14F147008E5857E6F9466A9 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE550002 /* FeeReportPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeReportPDF.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE550004 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolleyTrackerApp.swift; sourceTree = "<group>"; };
 		BC0F324F5279566E1A195FAA /* FeeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeRecord.swift; sourceTree = "<group>"; };
 		BE5B14BC6C545756CE3F68BE /* AddEditPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditPlayerView.swift; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 		3E0827D1BD9272263BCAC84C /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				AA11BB22CC33DD44EE550004 /* AppTheme.swift */,
 				B14F147008E5857E6F9466A9 /* Extensions.swift */,
 				AA11BB22CC33DD44EE550002 /* FeeReportPDF.swift */,
 			);
@@ -255,6 +258,7 @@
 				3CEDFE0F167C4AF8271277D3 /* EditProfileView.swift in Sources */,
 				B3464C9FF1C1D0309B03FFF8 /* Extensions.swift in Sources */,
 				AA11BB22CC33DD44EE550001 /* FeeReportPDF.swift in Sources */,
+				AA11BB22CC33DD44EE550003 /* AppTheme.swift in Sources */,
 				B7E11EC82C949F074E9BCB50 /* FeeOverviewView.swift in Sources */,
 				5E5BF56C397246ABCAAD07F7 /* FeeRecord.swift in Sources */,
 				A8B1F25961370E2CCD4EEC54 /* Group.swift in Sources */,
