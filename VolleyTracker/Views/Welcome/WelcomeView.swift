@@ -56,6 +56,35 @@ struct WelcomeView: View {
                     }
 
                     Spacer()
+
+                    // Tagline
+                    VStack(spacing: 0) {
+                        Text("Coach smarter.")
+                            .font(.system(size: 28, weight: .heavy, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white,
+                                        Color(red: 0.68, green: 0.55, blue: 1.0)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                        Text("Own your game.")
+                            .font(.system(size: 28, weight: .heavy, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.69, green: 0.30, blue: 0.87),
+                                        Color(red: 1.0, green: 0.35, blue: 0.71)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    }
+                    .padding(.bottom, 30)
                 }
             }
         }
