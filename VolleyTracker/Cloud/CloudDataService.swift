@@ -149,7 +149,8 @@ final class CloudDataService {
         role: CoachRole = .headCoach,
         photoData: Data? = nil
     ) async throws {
-        let avatarPath = try await uploadPhoto(photoData, path: "\(ownerID.uuidString)/coach.jpg")
+        let ownerFolder = ownerID.uuidString.lowercased()
+        let avatarPath = try await uploadPhoto(photoData, path: "\(ownerFolder)/coach.jpg")
         try await client.from("coach_profiles").upsert(
             CoachProfileRow(
                 id: ownerID,
@@ -168,9 +169,10 @@ final class CloudDataService {
 
     func upsertPlayer(_ player: Player, groupID: UUID) async throws {
         let ownerID = try await client.auth.session.user.id
+        let ownerFolder = ownerID.uuidString.lowercased()
         let avatarPath = try await uploadPhoto(
             player.photoData,
-            path: "\(ownerID.uuidString)/players/\(player.remoteID.uuidString).jpg"
+            path: "\(ownerFolder)/players/\(player.remoteID.uuidString.lowercased()).jpg"
         )
         try await client.from("players").upsert(
             PlayerRow(player, groupID: groupID, ownerID: ownerID, avatarPath: avatarPath)

@@ -21,6 +21,7 @@ struct AddEditPlayerView: View {
     @State private var photoItem: PhotosPickerItem?
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var draftRemoteID = UUID()
 
     private var isEditing: Bool { player != nil }
 
@@ -263,40 +264,49 @@ struct AddEditPlayerView: View {
     }
 
     private func save() async {
+        guard !isSaving else { return }
         isSaving = true
+        defer { isSaving = false }
         errorMessage = nil
 
         let jersey = Int(jerseyText)
-        let savedPlayer: Player
-        if let player {
-            player.fullName = fullName.trimmed
-            player.jerseyNumber = jersey
-            player.position = position
-            player.dateOfBirth = hasDOB ? dob : nil
-            player.parentName = parentName.trimmed
-            player.parentPhone = parentPhone.trimmed
-            player.notes = notes.trimmed
-            player.photoData = photoData
-            savedPlayer = player
-        } else {
-            let newPlayer = Player(fullName: fullName.trimmed, jerseyNumber: jersey, position: position)
-            newPlayer.dateOfBirth = hasDOB ? dob : nil
-            newPlayer.parentName = parentName.trimmed
-            newPlayer.parentPhone = parentPhone.trimmed
-            newPlayer.notes = notes.trimmed
-            newPlayer.photoData = photoData
-            modelContext.insert(newPlayer)
-            group.players.append(newPlayer)
-            savedPlayer = newPlayer
-        }
+        let draft = Player(
+            remoteID: player?.remoteID ?? draftRemoteID,
+            fullName: fullName.trimmed,
+            jerseyNumber: jersey,
+            position: position
+        )
+        draft.dateOfBirth = hasDOB ? dob : nil
+        draft.parentName = parentName.trimmed
+        draft.parentPhone = parentPhone.trimmed
+        draft.notes = notes.trimmed
+        draft.photoData = photoData
 
         do {
-            try await CloudDataService.shared.upsertPlayer(savedPlayer, groupID: group.remoteID)
+            try await CloudDataService.shared.upsertPlayer(draft, groupID: group.remoteID)
+
+            if let player {
+                apply(draft, to: player)
+            } else {
+                modelContext.insert(draft)
+                group.players.append(draft)
+            }
+
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
         }
-        isSaving = false
+    }
+
+    private func apply(_ draft: Player, to player: Player) {
+        player.fullName = draft.fullName
+        player.jerseyNumber = draft.jerseyNumber
+        player.position = draft.position
+        player.dateOfBirth = draft.dateOfBirth
+        player.parentName = draft.parentName
+        player.parentPhone = draft.parentPhone
+        player.notes = draft.notes
+        player.photoData = draft.photoData
     }
 }
