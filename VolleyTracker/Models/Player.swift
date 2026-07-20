@@ -13,6 +13,7 @@ enum PlayerPosition: String, Codable, CaseIterable {
 
 @Model
 final class Player {
+    var remoteID: UUID
     var fullName: String
     var dateOfBirth: Date?
     var photoData: Data?
@@ -40,7 +41,8 @@ final class Player {
         return String(parts.compactMap { $0.first }.prefix(2)).uppercased()
     }
 
-    init(fullName: String, jerseyNumber: Int? = nil, position: PlayerPosition = .unknown) {
+    init(remoteID: UUID = UUID(), fullName: String, jerseyNumber: Int? = nil, position: PlayerPosition = .unknown) {
+        self.remoteID = remoteID
         self.fullName    = fullName
         self.jerseyNumber = jerseyNumber
         self.positionRaw = position.rawValue

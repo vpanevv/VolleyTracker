@@ -18,6 +18,22 @@ struct GroupsListView: View {
         coach.groups.reduce(0) { $0 + $1.players.count }
     }
 
+    private var todayTrainingCount: Int {
+        coach.groups.reduce(0) { count, group in
+            count + group.trainingSessions.filter { Calendar.current.isDateInToday($0.date) }.count
+        }
+    }
+
+    private var unpaidPlayerCount: Int {
+        let month = Calendar.current.component(.month, from: Date())
+        let year = Calendar.current.component(.year, from: Date())
+        return coach.groups.reduce(0) { count, group in
+            count + group.players.filter { player in
+                player.feeRecords.first { $0.month == month && $0.year == year }?.status != .paid
+            }.count
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -41,13 +57,23 @@ struct GroupsListView: View {
                                 .foregroundStyle(Color(.secondaryLabel))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 40)
+                            Button {
+                                showingAdd = true
+                            } label: {
+                                Label("Create First Team", systemImage: "plus")
+                            }
+                            .buttonStyle(CourtPrimaryButtonStyle())
+                            .frame(maxWidth: 300)
+                            .padding(.top, 8)
                         }
                     } else {
                         List {
                             Section {
                                 AIGreetingHeader(coachName: coach.name,
                                                  groupCount: groups.count,
-                                                 playerCount: totalPlayers)
+                                                 playerCount: totalPlayers,
+                                                 todayTrainingCount: todayTrainingCount,
+                                                 unpaidPlayerCount: unpaidPlayerCount)
                                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 16, trailing: 16))
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
@@ -55,7 +81,7 @@ struct GroupsListView: View {
 
                             Section {
                                 ForEach(groups) { group in
-                                    NavigationLink(destination: GroupDetailView(group: group)) {
+                                    NavigationLink(destination: GroupDetailView(coach: coach, group: group)) {
                                         GroupRowView(group: group)
                                     }
                                     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -68,7 +94,7 @@ struct GroupsListView: View {
                                         Button { groupToEdit = group } label: {
                                             Label("Edit", systemImage: "pencil")
                                         }
-                                        .tint(.blue)
+                                        .tint(AppTheme.ocean)
                                     }
                                     .contextMenu {
                                         Button { groupToEdit = group } label: {
@@ -80,7 +106,7 @@ struct GroupsListView: View {
                                     }
                                 }
                             } header: {
-                                Text("Your Teams")
+                                    Text("Teams")
                                     .font(.footnote.weight(.semibold))
                                     .foregroundStyle(Color(.secondaryLabel))
                                     .textCase(nil)
@@ -92,7 +118,7 @@ struct GroupsListView: View {
                     }
                 }
             }
-            .navigationTitle("Groups")
+            .navigationTitle("Home")
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -106,7 +132,7 @@ struct GroupsListView: View {
             .sheet(isPresented: $showingAdd) { AddEditGroupView(coach: coach) }
             .sheet(item: $groupToEdit) { g in AddEditGroupView(coach: coach, group: g) }
             .navigationDestination(item: $autoNavGroup) { g in
-                GroupDetailView(group: g)
+                GroupDetailView(coach: coach, group: g)
             }
             .onAppear {
                 if ProcessInfo.processInfo.arguments.contains("--open-fees"),
@@ -133,8 +159,10 @@ struct GroupsListView: View {
     }
 
     private func delete(_ group: TeamGroup) {
+        let remoteID = group.remoteID
         coach.groups.removeAll { $0.persistentModelID == group.persistentModelID }
         modelContext.delete(group)
+        Task { try? await CloudDataService.shared.delete(table: "team_groups", id: remoteID) }
         groupToDelete = nil
     }
 }
@@ -145,6 +173,8 @@ struct AIGreetingHeader: View {
     let coachName: String
     let groupCount: Int
     let playerCount: Int
+    let todayTrainingCount: Int
+    let unpaidPlayerCount: Int
 
     @State private var now = Date()
     private let ticker = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
@@ -172,16 +202,16 @@ struct AIGreetingHeader: View {
                     RoundedRectangle(cornerRadius: 9, style: .continuous)
                         .fill(AppTheme.heroGradient.opacity(0.18))
                         .frame(width: 30, height: 30)
-                    Image(systemName: "sparkles")
+                    Image(systemName: "whistle.fill")
                         .font(.caption.weight(.bold))
-                        .heroGradientForeground()
+                        .foregroundStyle(AppTheme.deepBlue)
                 }
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(weekdayText.uppercased()) · \(dateText.uppercased())")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .tracking(1.2)
-                        .heroGradientForeground()
+                    .foregroundStyle(AppTheme.deepBlue)
                     Text(timeText)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color(.label))
@@ -193,12 +223,12 @@ struct AIGreetingHeader: View {
                 Circle()
                     .fill(AppTheme.heroGradient)
                     .frame(width: 8, height: 8)
-                    .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.6),
+                    .shadow(color: AppTheme.cyan.opacity(0.45),
                             radius: 6, x: 0, y: 0)
             }
             .onReceive(ticker) { now = $0 }
 
-            Text("\(Greeting.forNow()),\n\(firstName) 👋")
+            Text("\(Greeting.forNow()),\nCoach \(firstName)")
                 .font(.system(size: 30, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
@@ -208,25 +238,37 @@ struct AIGreetingHeader: View {
                 )
                 .lineSpacing(2)
 
-            HStack(spacing: 10) {
-                StatPill(icon: "person.3.fill",
-                         value: "\(groupCount)",
-                         label: groupCount == 1 ? "group" : "groups",
-                         tint: Color(red: 0.24, green: 0.40, blue: 1.00))
-                StatPill(icon: "figure.volleyball",
-                         value: "\(playerCount)",
-                         label: playerCount == 1 ? "player" : "players",
-                         tint: Color(red: 0.90, green: 0.30, blue: 0.70))
+            VStack(spacing: 9) {
+                HStack(spacing: 9) {
+                    StatPill(icon: "person.3.fill",
+                             value: "\(groupCount)",
+                             label: groupCount == 1 ? "team" : "teams",
+                             tint: AppTheme.ocean)
+                    StatPill(icon: "figure.volleyball",
+                             value: "\(playerCount)",
+                             label: playerCount == 1 ? "player" : "players",
+                             tint: AppTheme.cyan)
+                }
+                HStack(spacing: 9) {
+                    StatPill(icon: "calendar.badge.clock",
+                             value: "\(todayTrainingCount)",
+                             label: "today",
+                             tint: AppTheme.deepBlue)
+                    StatPill(icon: "eurosign.circle.fill",
+                             value: "\(unpaidPlayerCount)",
+                             label: "unpaid",
+                             tint: unpaidPlayerCount == 0 ? AppTheme.success : AppTheme.coral)
+                }
             }
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .strokeBorder(AppTheme.softGradient.opacity(0.55), lineWidth: 1)
         )
-        .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.12),
+        .shadow(color: AppTheme.navy.opacity(0.12),
                 radius: 24, x: 0, y: 12)
     }
 }
@@ -252,6 +294,7 @@ struct StatPill: View {
         .padding(.vertical, 7)
         .background(tint.opacity(0.12), in: Capsule())
         .overlay(Capsule().strokeBorder(tint.opacity(0.25), lineWidth: 1))
+        .frame(maxWidth: .infinity)
     }
 }
 

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0075012E7CA6C1D38E8FC4A1 /* TrainingAttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDB5EF2996AA7A3D4D19FBF /* TrainingAttendanceView.swift */; };
 		035A718A9EF8629124181C3D /* CalendarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474773EECE282536FC9F09CA /* CalendarTabView.swift */; };
+		08CB901C662A88D5F20E1201 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 3DB89E10F669C9FF4B1B53BC /* Supabase */; };
 		2CA44F690877923D9EAED8E5 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC2AEB762C43D381E7EB8D5 /* Player.swift */; };
 		3C3FA027090E16A9142BA121 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2584DE0D54D46C23A42CAA /* SettingsView.swift */; };
 		3CEDFE0F167C4AF8271277D3 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82FECD88EDBE07A0332F65D5 /* EditProfileView.swift */; };
@@ -20,43 +21,51 @@
 		7C32C145788CC54294D8D8A7 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94114424BCA14A825096E791 /* CreateAccountView.swift */; };
 		7F33280EB94D32647ED99A35 /* AddEditGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373F3693181F31B9FD9D640 /* AddEditGroupView.swift */; };
 		82718A17505989669A482B6C /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EA3BB3F860F7DD62F90EB1 /* WelcomeView.swift */; };
+		937D7EEE877CC2700A0E511C /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377CD0D764096624EFAF7A29 /* SupabaseConfig.swift */; };
 		A0727192E1D717D6D4B42CCE /* PlayerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AE44A592E88B1AFEF21B4 /* PlayerListView.swift */; };
 		A43011932CA67C93A531C9A1 /* Coach.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0704F48C34F8C6C4263448 /* Coach.swift */; };
 		A55C869217BB6B6F330A76F1 /* PlayerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 026F292CE97916648E1F9A55 /* PlayerDetailView.swift */; };
 		A8B1F25961370E2CCD4EEC54 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6DB0A2E9C80D5316D3EFFF /* Group.swift */; };
 		B3464C9FF1C1D0309B03FFF8 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14F147008E5857E6F9466A9 /* Extensions.swift */; };
-		AA11BB22CC33DD44EE550001 /* FeeReportPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550002 /* FeeReportPDF.swift */; };
-		AA11BB22CC33DD44EE550003 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550004 /* AppTheme.swift */; };
+		B5BCC8A26745A9288FBA6D30 /* CloudDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141EC8CC14776E0B87D0F850 /* CloudDataService.swift */; };
 		B7E11EC82C949F074E9BCB50 /* FeeOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60183628B3AE7433C02F22CB /* FeeOverviewView.swift */; };
 		B9066309C8304DBC494A7401 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71ADDF5FABCF6943D273396 /* MainTabView.swift */; };
 		CB23EBFFF0C746928963594C /* VolleyTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */; };
+		D90451EE5A7AD185D24F18AA /* FeeReportPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0DB1B14481B352DBEF0633 /* FeeReportPDF.swift */; };
 		DE7CD03D6E29806353B74EB2 /* AttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E34C185681EB16B1874BF72 /* AttendanceView.swift */; };
+		E7A040A8BBEAA99E5163816A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */; };
 		E7EE503BBD477B3244B30013 /* TrainingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C465D1F1CBFB0D035218403B /* TrainingSession.swift */; };
 		ED97B628441FB8E6FF018049 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB35B120B4601FE39F5755E3 /* Assets.xcassets */; };
 		F606BAA03F4D549FED0C258E /* GroupsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5894418978953F2B5C476DB7 /* GroupsListView.swift */; };
 		F8A6E732A07E9BFCB7C4D353 /* AttendanceRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A06B496D46D0402E6812E5ED /* AttendanceRecord.swift */; };
+		FBE97B9F53F5655D3BE5C653 /* AuthStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F44D66955D563A05AF7A582 /* AuthStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		026F292CE97916648E1F9A55 /* PlayerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDetailView.swift; sourceTree = "<group>"; };
+		141EC8CC14776E0B87D0F850 /* CloudDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudDataService.swift; sourceTree = "<group>"; };
 		2373F3693181F31B9FD9D640 /* AddEditGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditGroupView.swift; sourceTree = "<group>"; };
 		2BDB5EF2996AA7A3D4D19FBF /* TrainingAttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingAttendanceView.swift; sourceTree = "<group>"; };
+		377CD0D764096624EFAF7A29 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
 		474773EECE282536FC9F09CA /* CalendarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTabView.swift; sourceTree = "<group>"; };
 		57EA3BB3F860F7DD62F90EB1 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		5894418978953F2B5C476DB7 /* GroupsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsListView.swift; sourceTree = "<group>"; };
 		60183628B3AE7433C02F22CB /* FeeOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeOverviewView.swift; sourceTree = "<group>"; };
 		6B18C2949D9F60938D85332E /* AddTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTrainingView.swift; sourceTree = "<group>"; };
 		7C0704F48C34F8C6C4263448 /* Coach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coach.swift; sourceTree = "<group>"; };
 		7E34C185681EB16B1874BF72 /* AttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceView.swift; sourceTree = "<group>"; };
 		7E6DB0A2E9C80D5316D3EFFF /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
+		7F44D66955D563A05AF7A582 /* AuthStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthStore.swift; sourceTree = "<group>"; };
 		82FECD88EDBE07A0332F65D5 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
+		8C0DB1B14481B352DBEF0633 /* FeeReportPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeReportPDF.swift; sourceTree = "<group>"; };
 		94114424BCA14A825096E791 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
+		99176F808613C8CA0B833188 /* VolleyTracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VolleyTracker.entitlements; sourceTree = "<group>"; };
 		9C516B7A95B03D4384B0C52E /* GroupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailView.swift; sourceTree = "<group>"; };
 		A06B496D46D0402E6812E5ED /* AttendanceRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceRecord.swift; sourceTree = "<group>"; };
+		AB01352D55BC33593F3EE367 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B0FD636187B38B382F991B93 /* VolleyTracker.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VolleyTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B14F147008E5857E6F9466A9 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		AA11BB22CC33DD44EE550002 /* FeeReportPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeReportPDF.swift; sourceTree = "<group>"; };
-		AA11BB22CC33DD44EE550004 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolleyTrackerApp.swift; sourceTree = "<group>"; };
 		BC0F324F5279566E1A195FAA /* FeeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeRecord.swift; sourceTree = "<group>"; };
 		BE5B14BC6C545756CE3F68BE /* AddEditPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditPlayerView.swift; sourceTree = "<group>"; };
@@ -69,12 +78,26 @@
 		FE2584DE0D54D46C23A42CAA /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		359AC6DE9AAC52D0D3DA735F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				08CB901C662A88D5F20E1201 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
 		01CD2BC45CDAD04B8E75A674 /* VolleyTracker */ = {
 			isa = PBXGroup;
 			children = (
 				FB35B120B4601FE39F5755E3 /* Assets.xcassets */,
+				AB01352D55BC33593F3EE367 /* Info.plist */,
+				99176F808613C8CA0B833188 /* VolleyTracker.entitlements */,
 				B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */,
+				D7E346CC77D47B6CFF137BF0 /* Cloud */,
 				5ADDE006B5934BA176F428A7 /* Models */,
 				3E0827D1BD9272263BCAC84C /* Utilities */,
 				9D1C929A55AFDC4427C0CCE8 /* Views */,
@@ -104,9 +127,9 @@
 		3E0827D1BD9272263BCAC84C /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				AA11BB22CC33DD44EE550004 /* AppTheme.swift */,
+				5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */,
 				B14F147008E5857E6F9466A9 /* Extensions.swift */,
-				AA11BB22CC33DD44EE550002 /* FeeReportPDF.swift */,
+				8C0DB1B14481B352DBEF0633 /* FeeReportPDF.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -167,6 +190,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		D7E346CC77D47B6CFF137BF0 /* Cloud */ = {
+			isa = PBXGroup;
+			children = (
+				7F44D66955D563A05AF7A582 /* AuthStore.swift */,
+				141EC8CC14776E0B87D0F850 /* CloudDataService.swift */,
+				377CD0D764096624EFAF7A29 /* SupabaseConfig.swift */,
+			);
+			path = Cloud;
+			sourceTree = "<group>";
+		};
 		F7C5CA4EC74C9DF17541DA4F /* Welcome */ = {
 			isa = PBXGroup;
 			children = (
@@ -186,6 +219,7 @@
 			buildPhases = (
 				AC5EB91BD4C0A0A84A00E7DC /* Sources */,
 				6E40BE9E564EA074CB2AF697 /* Resources */,
+				359AC6DE9AAC52D0D3DA735F /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -193,6 +227,7 @@
 			);
 			name = VolleyTracker;
 			packageProductDependencies = (
+				3DB89E10F669C9FF4B1B53BC /* Supabase */,
 			);
 			productName = VolleyTracker;
 			productReference = B0FD636187B38B382F991B93 /* VolleyTracker.app */;
@@ -208,7 +243,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					FB72F2A815710F8656879C44 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = DP5G9GAZQJ;
 					};
 				};
 			};
@@ -221,6 +256,9 @@
 			);
 			mainGroup = 505CE9887669810BACFDBDC0;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				90B924B1979311D45A2EB29A /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C0B72DAAD72744B97A71FC44 /* Products */;
 			projectDirPath = "";
@@ -250,17 +288,19 @@
 				7F33280EB94D32647ED99A35 /* AddEditGroupView.swift in Sources */,
 				5E599F6481D31CDB62DE815C /* AddEditPlayerView.swift in Sources */,
 				453B69C9880C25F519F25E1B /* AddTrainingView.swift in Sources */,
+				E7A040A8BBEAA99E5163816A /* AppTheme.swift in Sources */,
 				F8A6E732A07E9BFCB7C4D353 /* AttendanceRecord.swift in Sources */,
 				DE7CD03D6E29806353B74EB2 /* AttendanceView.swift in Sources */,
+				FBE97B9F53F5655D3BE5C653 /* AuthStore.swift in Sources */,
 				035A718A9EF8629124181C3D /* CalendarTabView.swift in Sources */,
+				B5BCC8A26745A9288FBA6D30 /* CloudDataService.swift in Sources */,
 				A43011932CA67C93A531C9A1 /* Coach.swift in Sources */,
 				7C32C145788CC54294D8D8A7 /* CreateAccountView.swift in Sources */,
 				3CEDFE0F167C4AF8271277D3 /* EditProfileView.swift in Sources */,
 				B3464C9FF1C1D0309B03FFF8 /* Extensions.swift in Sources */,
-				AA11BB22CC33DD44EE550001 /* FeeReportPDF.swift in Sources */,
-				AA11BB22CC33DD44EE550003 /* AppTheme.swift in Sources */,
 				B7E11EC82C949F074E9BCB50 /* FeeOverviewView.swift in Sources */,
 				5E5BF56C397246ABCAAD07F7 /* FeeRecord.swift in Sources */,
+				D90451EE5A7AD185D24F18AA /* FeeReportPDF.swift in Sources */,
 				A8B1F25961370E2CCD4EEC54 /* Group.swift in Sources */,
 				6BACEC4B31E3E77B4F73477E /* GroupDetailView.swift in Sources */,
 				F606BAA03F4D549FED0C258E /* GroupsListView.swift in Sources */,
@@ -270,6 +310,7 @@
 				A55C869217BB6B6F330A76F1 /* PlayerDetailView.swift in Sources */,
 				A0727192E1D717D6D4B42CCE /* PlayerListView.swift in Sources */,
 				3C3FA027090E16A9142BA121 /* SettingsView.swift in Sources */,
+				937D7EEE877CC2700A0E511C /* SupabaseConfig.swift in Sources */,
 				0075012E7CA6C1D38E8FC4A1 /* TrainingAttendanceView.swift in Sources */,
 				E7EE503BBD477B3244B30013 /* TrainingSession.swift in Sources */,
 				CB23EBFFF0C746928963594C /* VolleyTrackerApp.swift in Sources */,
@@ -284,23 +325,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = VolleyTracker/VolleyTracker.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = VolleyTracker;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Take photos directly for player profiles.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save photos to your photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add player and coach profile photos.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				DEVELOPMENT_TEAM = DP5G9GAZQJ;
+				INFOPLIST_FILE = VolleyTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.volleytracker.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpanev.volleytracker;
 				PRODUCT_NAME = VolleyTracker;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -367,23 +403,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = VolleyTracker/VolleyTracker.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = VolleyTracker;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Take photos directly for player profiles.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save photos to your photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add player and coach profile photos.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				DEVELOPMENT_TEAM = DP5G9GAZQJ;
+				INFOPLIST_FILE = VolleyTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.volleytracker.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpanev.volleytracker;
 				PRODUCT_NAME = VolleyTracker;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -475,6 +506,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		90B924B1979311D45A2EB29A /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.46.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3DB89E10F669C9FF4B1B53BC /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 90B924B1979311D45A2EB29A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 05FBBC7C63F3F235EEB96FC7 /* Project object */;
 }

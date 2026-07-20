@@ -9,6 +9,7 @@ struct CalendarTabView: View {
     @State private var selectedDate = Date()
     @State private var displayedMonth: Date = Calendar.current.startOfMonth(for: Date())
     @State private var showingAdd = false
+    @State private var recurringGroupToCreate: TeamGroup?
 
     private var coachGroupIDs: Set<PersistentIdentifier> {
         Set(coach.groups.map(\.persistentModelID))
@@ -25,10 +26,36 @@ struct CalendarTabView: View {
     }
 
     private var markedDays: Set<Date> {
-        Set(allSessions.compactMap { s -> Date? in
+        var days = Set(allSessions.compactMap { s -> Date? in
             guard let g = s.group, coachGroupIDs.contains(g.persistentModelID) else { return nil }
             return Calendar.current.startOfDay(for: s.date)
         })
+
+        let calendar = Calendar.current
+        let monthStart = calendar.startOfMonth(for: displayedMonth)
+        if let range = calendar.range(of: .day, in: .month, for: monthStart) {
+            for day in range {
+                guard let date = calendar.date(byAdding: .day, value: day - 1, to: monthStart) else { continue }
+                let scheduleDay = calendar.component(.weekday, from: date) - 1
+                if coach.groups.contains(where: { $0.trainingDays.contains(scheduleDay) }) {
+                    days.insert(calendar.startOfDay(for: date))
+                }
+            }
+        }
+        return days
+    }
+
+    private var recurringGroupsForSelectedDate: [TeamGroup] {
+        let scheduleDay = Calendar.current.component(.weekday, from: selectedDate) - 1
+        let groupsWithRealSessions = Set(
+            trainingsForSelectedDate.compactMap { $0.group?.persistentModelID }
+        )
+        return coach.groups
+            .filter {
+                $0.trainingDays.contains(scheduleDay) &&
+                !groupsWithRealSessions.contains($0.persistentModelID)
+            }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     var body: some View {
@@ -38,15 +65,15 @@ struct CalendarTabView: View {
 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // AI tag row
+                        // Context row
                         HStack(spacing: 8) {
-                            Image(systemName: "sparkles")
+                            Image(systemName: "calendar.badge.clock")
                                 .font(.footnote.weight(.bold))
-                            Text("Your training week")
+                            Text("Plan the week")
                                 .font(.footnote.weight(.bold))
                                 .tracking(0.5)
                         }
-                        .heroGradientForeground()
+                        .foregroundStyle(AppTheme.deepBlue)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
                         .padding(.top, 4)
@@ -65,18 +92,18 @@ struct CalendarTabView: View {
                                 .foregroundStyle(Color(.label))
                                 .padding(.horizontal)
 
-                            if trainingsForSelectedDate.isEmpty {
+                            if trainingsForSelectedDate.isEmpty && recurringGroupsForSelectedDate.isEmpty {
                                 VStack(spacing: 6) {
-                                    Image(systemName: "moon.zzz.fill")
+                                    Image(systemName: "calendar.badge.plus")
                                         .font(.title2)
-                                        .heroGradientForeground()
+                                        .foregroundStyle(AppTheme.ocean)
                                     Text("No trainings scheduled")
                                         .font(.subheadline.weight(.medium))
                                         .foregroundStyle(Color(.secondaryLabel))
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 24)
-                                .background(.ultraThinMaterial,
+                                .background(.regularMaterial,
                                             in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -84,11 +111,23 @@ struct CalendarTabView: View {
                                 )
                                 .padding(.horizontal)
                             } else {
-                                ForEach(trainingsForSelectedDate) { session in
-                                    NavigationLink(destination: TrainingAttendanceView(session: session)) {
-                                        TrainingCard(session: session)
+                                VStack(spacing: 10) {
+                                    ForEach(trainingsForSelectedDate) { session in
+                                        NavigationLink(destination: TrainingAttendanceView(session: session)) {
+                                            TrainingCard(session: session)
+                                        }
+                                        .buttonStyle(.plain)
                                     }
-                                    .buttonStyle(.plain)
+
+                                    ForEach(recurringGroupsForSelectedDate) { group in
+                                        Button {
+                                            recurringGroupToCreate = group
+                                        } label: {
+                                            ScheduledTrainingCard(group: group)
+                                        }
+                                        .buttonStyle(.plain)
+                                        .accessibilityHint("Creates a training session from this weekly schedule")
+                                    }
                                 }
                             }
 
@@ -101,8 +140,8 @@ struct CalendarTabView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 18)
                                 .padding(.vertical, 12)
-                                .background(AppTheme.heroGradient, in: Capsule())
-                                .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35),
+                                .background(AppTheme.heroGradient, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+                                .shadow(color: AppTheme.deepBlue.opacity(0.26),
                                         radius: 14, x: 0, y: 8)
                             }
                             .padding(.horizontal)
@@ -113,10 +152,17 @@ struct CalendarTabView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle("Calendar")
+            .navigationTitle("Schedule")
             .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingAdd) {
                 AddTrainingView(groups: coach.groups, prefilledDate: selectedDate)
+            }
+            .sheet(item: $recurringGroupToCreate) { group in
+                AddTrainingView(
+                    groups: [group],
+                    preselectedGroup: group,
+                    prefilledDate: selectedDate
+                )
             }
         }
     }
@@ -212,12 +258,12 @@ struct MonthCalendarView: View {
             .padding(.horizontal, 8)
         }
         .padding(.vertical, 16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .strokeBorder(AppTheme.softGradient.opacity(0.55), lineWidth: 1)
         )
-        .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.12),
+        .shadow(color: AppTheme.navy.opacity(0.12),
                 radius: 24, x: 0, y: 12)
         .padding(.horizontal)
     }
@@ -247,7 +293,7 @@ struct CalendarDayCell: View {
                 if isSelected {
                     Circle()
                         .fill(AppTheme.heroGradient)
-                        .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.5),
+                        .shadow(color: AppTheme.deepBlue.opacity(0.38),
                                 radius: 10, x: 0, y: 6)
                 } else if isToday {
                     Circle()
@@ -321,13 +367,66 @@ struct TrainingCard: View {
                 .foregroundStyle(Color(.tertiaryLabel))
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(AppTheme.softGradient.opacity(0.4), lineWidth: 1)
         )
-        .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.1),
+        .shadow(color: AppTheme.navy.opacity(0.09),
                 radius: 14, x: 0, y: 6)
+        .padding(.horizontal)
+    }
+}
+
+struct ScheduledTrainingCard: View {
+    let group: TeamGroup
+
+    private var timeText: String {
+        guard let time = group.trainingTime else { return "Time not set" }
+        return time.formatted(date: .omitted, time: .shortened)
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(AppTheme.energyGradient.opacity(0.28))
+                    .frame(width: 48, height: 48)
+                Image(systemName: "repeat")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(AppTheme.deepBlue)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(group.name)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Text("Weekly schedule · \(timeText)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Text("SCHEDULED")
+                .font(.system(size: 9, weight: .black))
+                .tracking(0.7)
+                .foregroundStyle(AppTheme.deepBlue)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(AppTheme.sun.opacity(0.30), in: Capsule())
+
+            Image(systemName: "plus.circle.fill")
+                .font(.title3)
+                .foregroundStyle(AppTheme.ocean)
+        }
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(AppTheme.sun.opacity(0.40), lineWidth: 1)
+        )
+        .shadow(color: AppTheme.navy.opacity(0.08), radius: 12, y: 6)
         .padding(.horizontal)
     }
 }

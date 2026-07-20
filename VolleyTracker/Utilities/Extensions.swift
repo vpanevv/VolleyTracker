@@ -122,7 +122,7 @@ struct PlayerAvatarView: View {
                     .scaledToFill()
             } else {
                 ZStack {
-                    Color.blue
+                    AppTheme.ocean
                     Text(initials.isEmpty ? "?" : initials)
                         .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white)

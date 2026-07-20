@@ -10,22 +10,24 @@ struct AddEditGroupView: View {
 
     @State private var name = ""
     @State private var ageCategory = ""
-    @State private var colorHex = "#007AFF"
+    @State private var colorHex = "#0A6EC2"
     @State private var emoji = "👦"
     @State private var selectedDays: Set<Int> = []
     @State private var trainingTime = Date()
     @State private var hasTime = false
     @State private var monthlyFeeText = ""
+    @State private var isSaving = false
+    @State private var errorMessage: String?
 
     private var isEditing: Bool { group != nil }
 
     private let colors = [
-        "#007AFF","#5AC8FA","#34C759","#30D158",
-        "#FF9500","#FF3B30","#FF2D55","#AF52DE",
-        "#5856D6","#00C7BE","#A2845E","#636366"
+        "#0A6EC2","#0464A8","#18C2C2","#12A873",
+        "#FFC745","#FF941A","#F76350","#D74368",
+        "#4356B8","#127E93","#876E55","#59636E"
     ]
 
-    private let dayLetters = ["S","M","T","W","T","F","S"]
+    private let dayLetters = ["Su","Mo","Tu","We","Th","Fr","Sa"]
 
     var body: some View {
         NavigationStack {
@@ -47,20 +49,25 @@ struct AddEditGroupView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 4)
 
-                        // Group info
-                        themedSection("GROUP INFO") {
-                            VStack(spacing: 0) {
-                                ThemedTextField(icon: "textformat",
-                                                placeholder: "Name (e.g. U16 Girls)",
-                                                text: $name,
-                                                contentType: nil)
-                                Divider().padding(.leading, 54)
-                                ThemedTextField(icon: "number",
-                                                placeholder: "Age category (optional)",
-                                                text: $ageCategory,
-                                                contentType: nil)
-                            }
+                        VStack(alignment: .leading, spacing: 13) {
+                            CourtSectionLabel("Team details", subtitle: "Give this squad a clear identity.")
+                            CourtTextField(
+                                label: "Team name",
+                                placeholder: "e.g. U16 Girls",
+                                icon: "person.3.fill",
+                                text: $name,
+                                isRequired: true,
+                                capitalization: .words
+                            )
+                            CourtTextField(
+                                label: "Age category",
+                                placeholder: "Optional",
+                                icon: "number",
+                                text: $ageCategory,
+                                capitalization: .characters
+                            )
                         }
+                        .padding(.horizontal, 16)
 
                         // Color
                         themedSection("COLOR") {
@@ -82,28 +89,19 @@ struct AddEditGroupView: View {
                             .padding(16)
                         }
 
-                        // Monthly fee
-                        themedSection("MONTHLY FEE") {
-                            HStack(spacing: 14) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                        .fill(AppTheme.heroGradient.opacity(0.18))
-                                        .frame(width: 36, height: 36)
-                                    Image(systemName: "eurosign.circle.fill")
-                                        .font(.footnote.weight(.bold))
-                                        .heroGradientForeground()
-                                }
-                                TextField("0", text: $monthlyFeeText)
-                                    .keyboardType(.decimalPad)
-                                    .font(.body)
-                                    .foregroundStyle(Color(.label))
-                                Text("€ / player")
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color(.secondaryLabel))
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
+                        VStack(alignment: .leading, spacing: 13) {
+                            CourtSectionLabel("Monthly fee", subtitle: "Used for collection tracking and reports.")
+                            CourtTextField(
+                                label: "Fee per player (€)",
+                                placeholder: "0",
+                                icon: "eurosign.circle.fill",
+                                text: $monthlyFeeText,
+                                keyboardType: .decimalPad,
+                                capitalization: .never,
+                                submitLabel: .done
+                            )
                         }
+                        .padding(.horizontal, 16)
 
                         // Training schedule
                         themedSection("TRAINING SCHEDULE") {
@@ -132,7 +130,7 @@ struct AddEditGroupView: View {
                                             .foregroundStyle(Color(.label))
                                     }
                                 }
-                                .tint(Color(red: 0.24, green: 0.40, blue: 1.00))
+                                .tint(AppTheme.ocean)
                                 .padding(.horizontal, 16)
 
                                 if hasTime {
@@ -152,7 +150,7 @@ struct AddEditGroupView: View {
                                         DatePicker("", selection: $trainingTime,
                                                    displayedComponents: .hourAndMinute)
                                             .labelsHidden()
-                                            .tint(Color(red: 0.24, green: 0.40, blue: 1.00))
+                                            .tint(AppTheme.ocean)
                                     }
                                     .padding(.horizontal, 16)
                                     .padding(.bottom, 14)
@@ -160,6 +158,16 @@ struct AddEditGroupView: View {
                                     Spacer().frame(height: 14)
                                 }
                             }
+                        }
+
+                        if let errorMessage {
+                            Label(errorMessage, systemImage: "icloud.slash.fill")
+                                .font(.footnote)
+                                .foregroundStyle(AppTheme.coral)
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(AppTheme.coral.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+                                .padding(.horizontal, 16)
                         }
 
                         Spacer(minLength: 24)
@@ -176,19 +184,22 @@ struct AddEditGroupView: View {
                         .foregroundStyle(Color(.secondaryLabel))
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button { save() } label: {
-                        Text("Save")
-                            .font(.footnote.weight(.bold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 7)
-                            .background(AppTheme.heroGradient, in: Capsule())
-                            .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35),
-                                    radius: 10, x: 0, y: 5)
-                            .opacity(name.trimmed.isEmpty ? 0.5 : 1)
+                    Button { Task { await save() } } label: {
+                        HStack(spacing: 6) {
+                            if isSaving { ProgressView().tint(.white) }
+                            Text(isSaving ? "Saving" : "Save")
+                        }
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 7)
+                        .background(AppTheme.heroGradient, in: Capsule())
+                        .shadow(color: AppTheme.deepBlue.opacity(0.28),
+                                radius: 10, x: 0, y: 5)
+                        .opacity(name.trimmed.isEmpty ? 0.5 : 1)
                     }
                     .buttonStyle(.plain)
-                    .disabled(name.trimmed.isEmpty)
+                    .disabled(name.trimmed.isEmpty || isSaving)
                 }
             }
             .onAppear(perform: loadIfEditing)
@@ -212,7 +223,7 @@ struct AddEditGroupView: View {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(AppTheme.softGradient.opacity(0.55), lineWidth: 1)
                 )
-                .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.10),
+                .shadow(color: AppTheme.navy.opacity(0.10),
                         radius: 18, x: 0, y: 10)
                 .padding(.horizontal, 16)
         }
@@ -246,7 +257,7 @@ struct AddEditGroupView: View {
                                   lineWidth: 1)
             )
             .shadow(color: selected
-                    ? Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35)
+                    ? AppTheme.deepBlue.opacity(0.28)
                     : Color.clear,
                     radius: 12, x: 0, y: 6)
         }
@@ -300,7 +311,7 @@ struct AddEditGroupView: View {
             )
             .foregroundStyle(selected ? .white : Color(.secondaryLabel))
             .shadow(color: selected
-                    ? Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35)
+                    ? AppTheme.deepBlue.opacity(0.28)
                     : Color.clear,
                     radius: 8, x: 0, y: 4)
             .onTapGesture {
@@ -348,8 +359,12 @@ struct AddEditGroupView: View {
         return Double(normalized) ?? 0
     }
 
-    private func save() {
+    private func save() async {
+        isSaving = true
+        errorMessage = nil
         let fee = parsedFee()
+        let savedGroup: TeamGroup
+        let isNewGroup: Bool
         if let g = group {
             g.name         = name.trimmed
             g.ageCategory  = ageCategory.trimmed
@@ -358,6 +373,8 @@ struct AddEditGroupView: View {
             g.trainingDays = Array(selectedDays).sorted()
             g.trainingTime = hasTime ? trainingTime : nil
             g.monthlyFee   = fee
+            savedGroup = g
+            isNewGroup = false
         } else {
             let g = TeamGroup(
                 name: name.trimmed,
@@ -368,9 +385,20 @@ struct AddEditGroupView: View {
             )
             g.trainingDays = Array(selectedDays).sorted()
             g.trainingTime = hasTime ? trainingTime : nil
-            modelContext.insert(g)
-            coach.groups.append(g)
+            savedGroup = g
+            isNewGroup = true
         }
-        dismiss()
+        do {
+            try await CloudDataService.shared.upsertGroup(savedGroup)
+            if isNewGroup {
+                modelContext.insert(savedGroup)
+                coach.groups.append(savedGroup)
+            }
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isSaving = false
     }
 }

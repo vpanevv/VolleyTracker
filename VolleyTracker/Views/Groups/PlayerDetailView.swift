@@ -25,7 +25,7 @@ struct PlayerDetailView: View {
                             if let n = player.jerseyNumber {
                                 Text("#\(n)")
                                     .font(.title2.bold())
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(AppTheme.ocean)
                             }
                             Text(player.fullName)
                                 .font(.title2.bold())

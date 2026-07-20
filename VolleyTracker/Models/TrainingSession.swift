@@ -3,6 +3,7 @@ import Foundation
 
 @Model
 final class TrainingSession {
+    var remoteID: UUID
     var date: Date
     var startTime: Date
     var endTime: Date
@@ -14,7 +15,8 @@ final class TrainingSession {
 
     @Relationship(deleteRule: .cascade) var attendanceRecords: [AttendanceRecord] = []
 
-    init(date: Date, startTime: Date, endTime: Date, notes: String = "") {
+    init(remoteID: UUID = UUID(), date: Date, startTime: Date, endTime: Date, notes: String = "") {
+        self.remoteID = remoteID
         self.date      = date
         self.startTime = startTime
         self.endTime   = endTime

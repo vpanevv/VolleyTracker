@@ -1,115 +1,378 @@
 import SwiftUI
 
-// MARK: - Brand gradients
+// MARK: - Court Energy design system
 
 enum AppTheme {
-    /// Signature blue → indigo → pink "AI" gradient used for accents,
-    /// gradient text, primary buttons, and icon badges.
+    static let navy = Color(red: 0.03, green: 0.11, blue: 0.20)
+    static let deepBlue = Color(red: 0.04, green: 0.29, blue: 0.55)
+    static let ocean = Color(red: 0.04, green: 0.43, blue: 0.76)
+    static let cyan = Color(red: 0.09, green: 0.76, blue: 0.76)
+    static let sun = Color(red: 1.00, green: 0.78, blue: 0.27)
+    static let coral = Color(red: 0.97, green: 0.38, blue: 0.31)
+    static let success = Color(red: 0.10, green: 0.67, blue: 0.46)
+
     static let heroGradient = LinearGradient(
-        colors: [
-            Color(red: 0.24, green: 0.40, blue: 1.00), // electric blue
-            Color(red: 0.50, green: 0.30, blue: 1.00), // violet
-            Color(red: 1.00, green: 0.35, blue: 0.70)  // pink
-        ],
+        colors: [deepBlue, ocean, cyan],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
-    /// Softer supporting gradient for cards / outlines.
+    static let deepGradient = LinearGradient(
+        colors: [navy, deepBlue, ocean],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let energyGradient = LinearGradient(
+        colors: [sun, Color(red: 1.00, green: 0.58, blue: 0.18)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
     static let softGradient = LinearGradient(
-        colors: [
-            Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.55),
-            Color(red: 0.90, green: 0.30, blue: 0.70).opacity(0.55)
-        ],
+        colors: [ocean.opacity(0.58), cyan.opacity(0.42)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
-    /// Used for a subtle outline on glass cards.
-    static let hairline = Color.white.opacity(0.22)
+    static let hairline = Color.white.opacity(0.20)
+    static let cornerRadius: CGFloat = 20
+    static let fieldCornerRadius: CGFloat = 16
 }
 
-// MARK: - Aurora background
+// MARK: - Background
 
-/// Blurry blob "mesh" background reminiscent of modern AI apps.
-/// Sits behind list / scroll content; respects light & dark mode.
 struct AuroraBackground: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         ZStack {
-            // Base tint
-            (scheme == .dark
-             ? Color(red: 0.04, green: 0.05, blue: 0.10)
-             : Color(red: 0.96, green: 0.97, blue: 1.00))
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: scheme == .dark
+                    ? [AppTheme.navy, Color(red: 0.025, green: 0.07, blue: 0.12)]
+                    : [Color(red: 0.95, green: 0.98, blue: 1.00), Color(red: 0.91, green: 0.97, blue: 0.98)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
 
-            // Blob 1 — blue
             Circle()
-                .fill(Color(red: 0.24, green: 0.40, blue: 1.00))
-                .frame(width: 380, height: 380)
-                .opacity(scheme == .dark ? 0.35 : 0.22)
-                .blur(radius: 90)
-                .offset(x: -140, y: -220)
-
-            // Blob 2 — violet
-            Circle()
-                .fill(Color(red: 0.55, green: 0.28, blue: 1.00))
-                .frame(width: 320, height: 320)
-                .opacity(scheme == .dark ? 0.30 : 0.18)
-                .blur(radius: 90)
-                .offset(x: 170, y: -80)
-
-            // Blob 3 — pink
-            Circle()
-                .fill(Color(red: 1.00, green: 0.35, blue: 0.70))
+                .fill(AppTheme.ocean)
                 .frame(width: 360, height: 360)
-                .opacity(scheme == .dark ? 0.28 : 0.16)
-                .blur(radius: 100)
-                .offset(x: -80, y: 260)
+                .opacity(scheme == .dark ? 0.24 : 0.15)
+                .blur(radius: 95)
+                .offset(x: -170, y: -250)
+
+            Circle()
+                .fill(AppTheme.cyan)
+                .frame(width: 300, height: 300)
+                .opacity(scheme == .dark ? 0.17 : 0.12)
+                .blur(radius: 90)
+                .offset(x: 190, y: 120)
+
+            VolleyballCourtLines()
+                .stroke(scheme == .dark ? Color.white.opacity(0.035) : AppTheme.deepBlue.opacity(0.045),
+                        style: StrokeStyle(lineWidth: 1.2, lineCap: .round))
+                .frame(width: 420, height: 660)
+                .rotationEffect(.degrees(-14))
+                .offset(x: 100, y: 170)
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
     }
 }
 
-// MARK: - Glass card style
+/// A calmer surface for information-dense team screens.
+struct CourtWorkspaceBackground: View {
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: scheme == .dark
+                    ? [AppTheme.navy, Color(red: 0.03, green: 0.08, blue: 0.13)]
+                    : [Color(red: 0.965, green: 0.985, blue: 1.0), Color(red: 0.94, green: 0.975, blue: 0.98)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            Circle()
+                .fill(AppTheme.ocean.opacity(scheme == .dark ? 0.16 : 0.08))
+                .frame(width: 280, height: 280)
+                .blur(radius: 80)
+                .offset(x: -170, y: -280)
+            Circle()
+                .fill(AppTheme.cyan.opacity(scheme == .dark ? 0.10 : 0.06))
+                .frame(width: 260, height: 260)
+                .blur(radius: 90)
+                .offset(x: 180, y: 300)
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+}
+
+private struct VolleyballCourtLines: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let court = rect.insetBy(dx: rect.width * 0.12, dy: rect.height * 0.08)
+        path.addRoundedRect(in: court, cornerSize: CGSize(width: 18, height: 18))
+        path.move(to: CGPoint(x: court.minX, y: court.midY))
+        path.addLine(to: CGPoint(x: court.maxX, y: court.midY))
+        path.move(to: CGPoint(x: court.minX, y: court.midY - court.height * 0.18))
+        path.addLine(to: CGPoint(x: court.maxX, y: court.midY - court.height * 0.18))
+        path.move(to: CGPoint(x: court.minX, y: court.midY + court.height * 0.18))
+        path.addLine(to: CGPoint(x: court.maxX, y: court.midY + court.height * 0.18))
+        return path
+    }
+}
+
+// MARK: - Cards and badges
 
 struct GlassCard<Content: View>: View {
-    var cornerRadius: CGFloat = 20
+    var cornerRadius: CGFloat = AppTheme.cornerRadius
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         content()
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(AppTheme.softGradient.opacity(0.6), lineWidth: 1)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(AppTheme.softGradient.opacity(0.42), lineWidth: 1)
             )
-            .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.12),
-                    radius: 24, x: 0, y: 12)
+            .shadow(color: AppTheme.navy.opacity(0.10), radius: 18, x: 0, y: 10)
     }
 }
 
-// MARK: - Gradient text helper
+struct CourtIconBadge: View {
+    let icon: String
+    var tint: Color = AppTheme.ocean
+    var size: CGFloat = 40
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
+                .fill(tint.opacity(0.13))
+            Image(systemName: icon)
+                .font(.system(size: size * 0.38, weight: .bold))
+                .foregroundStyle(tint)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+struct CourtSectionLabel: View {
+    let title: String
+    let subtitle: String?
+
+    init(_ title: String, subtitle: String? = nil) {
+        self.title = title
+        self.subtitle = subtitle
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title.uppercased())
+                .font(.caption.weight(.bold))
+                .tracking(1.1)
+                .foregroundStyle(AppTheme.deepBlue)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+// MARK: - Fields
+
+struct CourtTextField: View {
+    let label: String
+    let placeholder: String
+    let icon: String
+    @Binding var text: String
+    var isRequired = false
+    var helper: String? = nil
+    var contentType: UITextContentType? = nil
+    var keyboardType: UIKeyboardType = .default
+    var capitalization: TextInputAutocapitalization = .sentences
+    var submitLabel: SubmitLabel = .next
+
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 4) {
+                Text(label)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                if isRequired {
+                    Text("Required")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(AppTheme.coral)
+                }
+            }
+
+            HStack(spacing: 12) {
+                CourtIconBadge(icon: icon, tint: isFocused ? AppTheme.cyan : AppTheme.ocean, size: 38)
+
+                TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(.tertiary))
+                    .textContentType(contentType)
+                    .keyboardType(keyboardType)
+                    .textInputAutocapitalization(capitalization)
+                    .submitLabel(submitLabel)
+                    .focused($isFocused)
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(.primary)
+
+                if !text.isEmpty {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(AppTheme.success)
+                        .accessibilityHidden(true)
+                }
+            }
+            .padding(.horizontal, 14)
+            .frame(minHeight: 58)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous)
+                    .strokeBorder(isFocused ? AnyShapeStyle(AppTheme.heroGradient) : AnyShapeStyle(AppTheme.ocean.opacity(0.18)),
+                                  lineWidth: isFocused ? 2 : 1)
+            )
+            .shadow(color: isFocused ? AppTheme.cyan.opacity(0.14) : .clear, radius: 12, y: 5)
+
+            if let helper {
+                Text(helper)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .animation(.easeOut(duration: 0.18), value: isFocused)
+    }
+}
+
+struct CourtTextEditor: View {
+    let label: String
+    let placeholder: String
+    @Binding var text: String
+    var minimumHeight: CGFloat = 110
+
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            ZStack(alignment: .topLeading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .foregroundStyle(.tertiary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 15)
+                }
+                TextEditor(text: $text)
+                    .scrollContentBackground(.hidden)
+                    .padding(10)
+                    .focused($isFocused)
+            }
+            .frame(minHeight: minimumHeight)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous)
+                    .strokeBorder(isFocused ? AnyShapeStyle(AppTheme.heroGradient) : AnyShapeStyle(AppTheme.ocean.opacity(0.18)),
+                                  lineWidth: isFocused ? 2 : 1)
+            )
+        }
+    }
+}
+
+// Compatibility wrapper used by existing forms while they adopt CourtTextField.
+struct ThemedTextField: View {
+    let icon: String
+    let placeholder: String
+    @Binding var text: String
+    var contentType: UITextContentType?
+
+    var body: some View {
+        HStack(spacing: 14) {
+            CourtIconBadge(icon: icon, size: 38)
+            TextField(placeholder, text: $text)
+                .textContentType(contentType)
+                .font(.body.weight(.medium))
+                .foregroundStyle(.primary)
+            if !text.isEmpty {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(AppTheme.success)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+}
+
+struct ThemedSectionLabel: View {
+    let title: String
+    init(_ title: String) { self.title = title }
+    var body: some View { CourtSectionLabel(title) }
+}
+
+// MARK: - Buttons
+
+struct CourtPrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 54)
+            .background(AppTheme.heroGradient, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+            .overlay(alignment: .topTrailing) {
+                Circle()
+                    .fill(AppTheme.sun.opacity(0.75))
+                    .frame(width: 7, height: 7)
+                    .padding(12)
+            }
+            .shadow(color: AppTheme.deepBlue.opacity(isEnabled ? 0.28 : 0), radius: 14, y: 8)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.82 : 1) : 0.42)
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+struct CourtSecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(AppTheme.deepBlue)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 48)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .strokeBorder(AppTheme.ocean.opacity(0.24), lineWidth: 1)
+            )
+            .opacity(configuration.isPressed ? 0.72 : 1)
+    }
+}
+
+// MARK: - Helpers
 
 extension View {
-    /// Fills any foreground-styleable view (Text, Image) with the hero gradient.
     func heroGradientForeground() -> some View {
-        self.foregroundStyle(AppTheme.heroGradient)
+        foregroundStyle(AppTheme.heroGradient)
     }
 }
-
-// MARK: - Greeting helper
 
 enum Greeting {
     static func forNow() -> String {
-        let h = Calendar.current.component(.hour, from: Date())
-        switch h {
-        case 5..<12:  return "Good morning"
+        switch Calendar.current.component(.hour, from: Date()) {
+        case 5..<12: return "Good morning"
         case 12..<17: return "Good afternoon"
         case 17..<22: return "Good evening"
-        default:      return "Hello"
+        default: return "Hello"
         }
     }
 }

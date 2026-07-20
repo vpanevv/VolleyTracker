@@ -24,21 +24,16 @@ struct PlayerListView: View {
     var body: some View {
         Group {
             if group.players.isEmpty {
-                ContentUnavailableView {
-                    Label("No Players Yet", systemImage: "person.badge.plus")
-                } description: {
-                    Text("Add your first player to \(group.name).")
-                } actions: {
-                    Button("Add Player") { showingAdd = true }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
-                }
+                CourtRosterEmptyState(groupName: group.name) { showingAdd = true }
             } else {
                 List {
                     ForEach(players) { player in
                         NavigationLink(destination: PlayerDetailView(player: player, group: group)) {
                             PlayerRowView(player: player)
                         }
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) { playerToDelete = player } label: {
                                 Label("Delete", systemImage: "trash")
@@ -46,11 +41,12 @@ struct PlayerListView: View {
                             Button { playerToEdit = player } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
-                            .tint(.blue)
+                            .tint(AppTheme.ocean)
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .toolbar {
@@ -94,6 +90,7 @@ struct PlayerListView: View {
     }
 
     private func delete(_ player: Player) {
+        let remoteID = player.remoteID
         // Clean up attendance records in all training sessions
         for session in group.trainingSessions {
             session.attendanceRecords.removeAll {
@@ -102,7 +99,51 @@ struct PlayerListView: View {
         }
         group.players.removeAll { $0.persistentModelID == player.persistentModelID }
         modelContext.delete(player)
+        Task { try? await CloudDataService.shared.delete(table: "players", id: remoteID) }
         playerToDelete = nil
+    }
+}
+
+private struct CourtRosterEmptyState: View {
+    let groupName: String
+    let onAdd: () -> Void
+
+    var body: some View {
+        VStack(spacing: 18) {
+            ZStack {
+                Circle()
+                    .fill(AppTheme.heroGradient)
+                    .frame(width: 94, height: 94)
+                    .blur(radius: 22)
+                    .opacity(0.16)
+                CourtIconBadge(icon: "person.badge.plus", tint: AppTheme.ocean, size: 74)
+            }
+
+            VStack(spacing: 6) {
+                Text("Build the roster")
+                    .font(.title3.weight(.bold))
+                Text("Add your first player to \(groupName), then track attendance, positions and fees.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button(action: onAdd) {
+                Label("Add First Player", systemImage: "plus")
+            }
+            .buttonStyle(CourtPrimaryButtonStyle())
+        }
+        .padding(24)
+        .frame(maxWidth: 350)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(AppTheme.ocean.opacity(0.15), lineWidth: 1)
+        )
+        .shadow(color: AppTheme.navy.opacity(0.10), radius: 20, y: 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 22)
+        .padding(.bottom, 70)
     }
 }
 
@@ -127,7 +168,7 @@ struct PlayerRowView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.blue, in: .capsule)
+                            .background(AppTheme.deepBlue, in: .capsule)
                     }
                     if player.position != .unknown {
                         Text(player.position.rawValue)
@@ -145,6 +186,12 @@ struct PlayerRowView: View {
                     .foregroundStyle(Color(.tertiaryLabel))
             }
         }
-        .padding(.vertical, 2)
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .strokeBorder(AppTheme.ocean.opacity(0.14), lineWidth: 1)
+        )
+        .shadow(color: AppTheme.navy.opacity(0.07), radius: 10, y: 5)
     }
 }

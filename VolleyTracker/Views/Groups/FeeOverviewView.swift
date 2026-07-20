@@ -44,15 +44,19 @@ struct FeeOverviewView: View {
 
     private func markPaid(_ player: Player) {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        let savedRecord: FeeRecord
         if let rec = player.feeRecords.first(where: { $0.month == currentMonth && $0.year == currentYear }) {
             rec.status = .paid
             rec.paymentDate = Date()
+            savedRecord = rec
         } else {
             let rec = FeeRecord(month: currentMonth, year: currentYear, status: .paid)
             rec.paymentDate = Date()
             modelContext.insert(rec)
             player.feeRecords.append(rec)
+            savedRecord = rec
         }
+        Task { try? await CloudDataService.shared.upsertFee(savedRecord, playerID: player.remoteID) }
     }
 
     private var unpaidPlayersInGroup: [Player] {
@@ -96,7 +100,7 @@ struct FeeOverviewView: View {
             HStack(spacing: 8) {
                 Image(systemName: "eurosign.circle.fill")
                     .font(.title3)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(AppTheme.ocean)
                 Text("To Collect · \(monthLabel)")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color(.label))
@@ -109,7 +113,7 @@ struct FeeOverviewView: View {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(formatEuro(outstandingTotal))
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(outstandingTotal > 0 ? Color.orange : Color.green)
+                    .foregroundStyle(outstandingTotal > 0 ? AppTheme.coral : AppTheme.success)
                 Text("outstanding")
                     .font(.subheadline)
                     .foregroundStyle(Color(.secondaryLabel))
@@ -127,13 +131,17 @@ struct FeeOverviewView: View {
                 let fraction = expectedTotal > 0 ? min(1, collectedTotal / expectedTotal) : 0
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color(.tertiarySystemFill))
-                    Capsule().fill(Color.green).frame(width: geo.size.width * fraction)
+                    Capsule().fill(AppTheme.success).frame(width: geo.size.width * fraction)
                 }
             }
             .frame(height: 6)
         }
         .padding(14)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+        .background(.regularMaterial, in: .rect(cornerRadius: 18))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .strokeBorder(AppTheme.ocean.opacity(0.16), lineWidth: 1)
+        )
     }
 
     var body: some View {
@@ -158,7 +166,8 @@ struct FeeOverviewView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.blue, in: .rect(cornerRadius: 12))
+                            .background(AppTheme.heroGradient, in: .rect(cornerRadius: 16))
+                            .shadow(color: AppTheme.deepBlue.opacity(0.24), radius: 12, y: 6)
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal)
@@ -238,7 +247,7 @@ struct FeeOverviewView: View {
                         .foregroundStyle(Color(.secondaryLabel))
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+                        .background(.regularMaterial, in: .rect(cornerRadius: 16))
                         .padding(.horizontal)
                         .padding(.top, 16)
                         .padding(.bottom, 32)
@@ -279,13 +288,17 @@ struct FeePlayerRow: View {
 
     private func toggle(month: Int) {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        let savedRecord: FeeRecord
         if let r = record(for: month) {
             r.status = r.status.next
+            savedRecord = r
         } else {
             let r = FeeRecord(month: month, year: year, status: .paid)
             modelContext.insert(r)
             player.feeRecords.append(r)
+            savedRecord = r
         }
+        Task { try? await CloudDataService.shared.upsertFee(savedRecord, playerID: player.remoteID) }
     }
 
     var body: some View {
@@ -317,7 +330,7 @@ struct FeePlayerRow: View {
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 4)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 8))
+        .background(.regularMaterial, in: .rect(cornerRadius: 10))
     }
 }
 
@@ -340,7 +353,7 @@ struct UnpaidThisMonthSection: View {
                 HStack(spacing: 10) {
                     Image(systemName: unpaid.isEmpty ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                         .font(.title3)
-                        .foregroundStyle(unpaid.isEmpty ? .green : .orange)
+                        .foregroundStyle(unpaid.isEmpty ? AppTheme.success : AppTheme.coral)
 
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Unpaid This Month")
@@ -359,7 +372,7 @@ struct UnpaidThisMonthSection: View {
                         .frame(minWidth: 32, minHeight: 28)
                         .padding(.horizontal, 8)
                         .background(
-                            (unpaid.isEmpty ? Color.green : Color.red),
+                            (unpaid.isEmpty ? AppTheme.success : AppTheme.coral),
                             in: .capsule
                         )
 
@@ -387,11 +400,11 @@ struct UnpaidThisMonthSection: View {
                 }
             }
         }
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+        .background(.regularMaterial, in: .rect(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(
-                    (unpaid.isEmpty ? Color.green : Color.orange).opacity(0.3),
+                    (unpaid.isEmpty ? AppTheme.success : AppTheme.coral).opacity(0.3),
                     lineWidth: 1
                 )
         )
@@ -418,7 +431,7 @@ struct UnpaidPlayerRow: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color.green, in: .capsule)
+                    .background(AppTheme.success, in: .capsule)
             }
             .buttonStyle(.plain)
         }

@@ -2,8 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     let coach: Coach
-    @AppStorage("isLoggedIn") private var isLoggedIn = false
-    @AppStorage("coachName") private var savedCoachName = ""
+    @EnvironmentObject private var authStore: AuthStore
 
     @State private var showingEditProfile = false
 
@@ -36,6 +35,12 @@ struct SettingsView: View {
                                 Text(coach.name)
                                     .font(.title2.weight(.bold))
                                     .foregroundStyle(Color(.label))
+                                Text(coach.role.rawValue)
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(AppTheme.deepBlue)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(AppTheme.sun.opacity(0.28), in: Capsule())
                                 if !coach.club.isEmpty {
                                     Text(coach.club)
                                         .font(.subheadline)
@@ -53,7 +58,7 @@ struct SettingsView: View {
                                 .padding(.horizontal, 18)
                                 .padding(.vertical, 9)
                                 .background(AppTheme.heroGradient, in: Capsule())
-                                .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35),
+                                .shadow(color: AppTheme.deepBlue.opacity(0.28),
                                         radius: 12, x: 0, y: 6)
                             }
                             .buttonStyle(.plain)
@@ -78,15 +83,15 @@ struct SettingsView: View {
                         let totalSessions = coach.groups.reduce(0) { $0 + $1.trainingSessions.count }
 
                         StatRow(icon: "person.3.fill",
-                                tint: Color(red: 0.24, green: 0.40, blue: 1.00),
+                                tint: AppTheme.ocean,
                                 label: "Groups",
                                 value: "\(coach.groups.count)")
                         StatRow(icon: "figure.volleyball",
-                                tint: Color(red: 0.55, green: 0.28, blue: 1.00),
+                                tint: AppTheme.cyan,
                                 label: "Total Players",
                                 value: "\(totalPlayers)")
                         StatRow(icon: "calendar",
-                                tint: Color(red: 1.00, green: 0.35, blue: 0.70),
+                                tint: AppTheme.sun,
                                 label: "Training Sessions",
                                 value: "\(totalSessions)")
                     } header: {
@@ -130,7 +135,7 @@ struct SettingsView: View {
                 .listStyle(.insetGrouped)
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Settings")
+            .navigationTitle("Profile")
             .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingEditProfile) {
                 EditProfileView(coach: coach)
@@ -139,8 +144,7 @@ struct SettingsView: View {
     }
 
     private func logOut() {
-        isLoggedIn = false
-        savedCoachName = ""
+        Task { await authStore.signOut() }
     }
 }
 

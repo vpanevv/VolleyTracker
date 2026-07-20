@@ -13,11 +13,14 @@ struct TrainingAttendanceView: View {
     private var players: [Player] { group?.players.sorted { $0.fullName < $1.fullName } ?? [] }
 
     var body: some View {
-        Group {
-            if quickMode {
-                quickModeView
-            } else {
-                detailListView
+        ZStack {
+            AuroraBackground()
+            Group {
+                if quickMode {
+                    quickModeView
+                } else {
+                    detailListView
+                }
             }
         }
         .navigationTitle(navTitle)
@@ -54,11 +57,11 @@ struct TrainingAttendanceView: View {
         ScrollView {
             // Summary strip (compact)
             HStack(spacing: 0) {
-                summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: .blue)
+                summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: AppTheme.success)
                 summaryCell("Absent",  count: statusMap.values.filter { $0 != .present }.count, color: Color(.secondaryLabel))
             }
             .padding(.vertical, 10)
-            .background(Color(.systemGroupedBackground))
+            .background(.ultraThinMaterial)
 
             if players.isEmpty {
                 Text("No players in this group.")
@@ -82,7 +85,7 @@ struct TrainingAttendanceView: View {
                 .padding(.vertical, 12)
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.clear)
     }
 
     private var detailListView: some View {
@@ -91,10 +94,10 @@ struct TrainingAttendanceView: View {
             if !statusMap.isEmpty {
                 Section {
                     HStack(spacing: 0) {
-                        summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: .green)
-                        summaryCell("Absent",  count: statusMap.values.filter { $0 == .absent  }.count, color: .red)
-                        summaryCell("Late",    count: statusMap.values.filter { $0 == .late    }.count, color: .orange)
-                        summaryCell("Excused", count: statusMap.values.filter { $0 == .excused }.count, color: .blue)
+                        summaryCell("Present", count: statusMap.values.filter { $0 == .present }.count, color: AppTheme.success)
+                        summaryCell("Absent",  count: statusMap.values.filter { $0 == .absent  }.count, color: AppTheme.coral)
+                        summaryCell("Late",    count: statusMap.values.filter { $0 == .late    }.count, color: AppTheme.sun)
+                        summaryCell("Excused", count: statusMap.values.filter { $0 == .excused }.count, color: AppTheme.ocean)
                     }
                 }
             }
@@ -124,12 +127,13 @@ struct TrainingAttendanceView: View {
             if !players.isEmpty {
                 Section {
                     Button("Mark All Present") { markAll(.present) }
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(AppTheme.deepBlue)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
     }
 
     // MARK: - Sub-views
@@ -182,6 +186,7 @@ struct TrainingAttendanceView: View {
             modelContext.insert(record)
             session.attendanceRecords.append(record)
         }
+        Task { try? await CloudDataService.shared.replaceAttendance(for: session) }
         isDirty = false
     }
 }
@@ -201,7 +206,7 @@ struct AttendancePlayerRow: View {
             } label: {
                 Image(systemName: status == .present ? "checkmark.square.fill" : "square")
                     .font(.title3)
-                    .foregroundStyle(status == .present ? .blue : Color(.secondaryLabel))
+                    .foregroundStyle(status == .present ? AppTheme.success : Color(.secondaryLabel))
             }
             .buttonStyle(.plain)
             .sensoryFeedback(.impact, trigger: status)
@@ -281,8 +286,12 @@ struct QuickAttendanceRow: View {
             .padding(.horizontal, 18)
             .frame(maxWidth: .infinity, minHeight: 72)
             .background(
-                isPresent ? Color.blue : Color(.secondarySystemGroupedBackground),
+                isPresent ? AnyShapeStyle(AppTheme.deepGradient) : AnyShapeStyle(.regularMaterial),
                 in: .rect(cornerRadius: 14)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(isPresent ? Color.clear : AppTheme.ocean.opacity(0.16), lineWidth: 1)
             )
             .contentShape(.rect(cornerRadius: 14))
         }

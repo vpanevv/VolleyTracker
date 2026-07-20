@@ -10,6 +10,7 @@ enum AttendanceStatus: String, Codable, CaseIterable {
 
 @Model
 final class AttendanceRecord {
+    var remoteID: UUID
     var player: Player?
     var playerName: String   // snapshot so display survives player deletion
     var statusRaw: String
@@ -19,7 +20,8 @@ final class AttendanceRecord {
         set { statusRaw = newValue.rawValue }
     }
 
-    init(player: Player, status: AttendanceStatus = .present) {
+    init(remoteID: UUID = UUID(), player: Player, status: AttendanceStatus = .present) {
+        self.remoteID = remoteID
         self.player = player
         self.playerName = player.fullName
         self.statusRaw = status.rawValue

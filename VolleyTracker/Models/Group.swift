@@ -4,6 +4,7 @@ import Foundation
 // Named TeamGroup to avoid collision with SwiftUI's Group view.
 @Model
 final class TeamGroup {
+    var remoteID: UUID
     var name: String
     var ageCategory: String
     var colorHex: String
@@ -17,12 +18,14 @@ final class TeamGroup {
     @Relationship(deleteRule: .cascade) var trainingSessions: [TrainingSession] = []
 
     init(
+        remoteID: UUID = UUID(),
         name: String,
         ageCategory: String = "",
         colorHex: String = "#007AFF",
         emoji: String = "👦",
         monthlyFee: Double = 0
     ) {
+        self.remoteID     = remoteID
         self.name         = name
         self.ageCategory  = ageCategory
         self.colorHex     = colorHex

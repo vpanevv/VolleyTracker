@@ -9,6 +9,7 @@ enum FeeStatus: String, Codable, CaseIterable {
 
 @Model
 final class FeeRecord {
+    var remoteID: UUID
     var month: Int   // 1–12
     var year: Int
     var statusRaw: String
@@ -30,7 +31,8 @@ final class FeeRecord {
         return FeeRecord.monthNames[month - 1]
     }
 
-    init(month: Int, year: Int, status: FeeStatus = .unpaid) {
+    init(remoteID: UUID = UUID(), month: Int, year: Int, status: FeeStatus = .unpaid) {
+        self.remoteID = remoteID
         self.month     = month
         self.year      = year
         self.statusRaw = status.rawValue

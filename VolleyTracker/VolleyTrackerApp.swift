@@ -1,11 +1,12 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
+import PhotosUI
 
 @main
 struct VolleyTrackerApp: App {
-    @AppStorage("isLoggedIn") private var isLoggedIn = false
+    @StateObject private var authStore = AuthStore()
 
-    let container: ModelContainer = {
+    private let container: ModelContainer = {
         let schema = Schema([
             Coach.self,
             TeamGroup.self,
@@ -14,137 +15,400 @@ struct VolleyTrackerApp: App {
             AttendanceRecord.self,
             FeeRecord.self
         ])
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         do {
-            return try ModelContainer(for: schema)
+            return try ModelContainer(for: schema, configurations: configuration)
         } catch {
-            // Schema changed (e.g. property renamed) — wipe the local store and start fresh.
-            // All data is local-only so this is safe during development.
-            let appSupport = FileManager.default
-                .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            let storeBase = appSupport.appendingPathComponent("default.store")
-            for suffix in ["", "-shm", "-wal"] {
-                try? FileManager.default.removeItem(
-                    at: URL(fileURLWithPath: storeBase.path + suffix))
-            }
-            do {
-                return try ModelContainer(for: schema)
-            } catch let retryError {
-                fatalError("ModelContainer creation failed after store reset: \(retryError)")
-            }
+            fatalError("Unable to create the in-memory app cache: \(error)")
         }
     }()
 
-    init() {
-        #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--seed-demo") {
-            DebugSeed.seedIfRequested(context: container.mainContext)
-            UserDefaults.standard.set(true, forKey: "isLoggedIn")
-        }
-        #endif
-    }
-
     var body: some Scene {
         WindowGroup {
-            if isLoggedIn {
-                LoggedInRootView()
-            } else {
-                WelcomeView()
-            }
+            CloudAppRoot()
+                .environmentObject(authStore)
         }
         .modelContainer(container)
     }
 }
 
-// MARK: - Debug seed
+struct CloudAppRoot: View {
+    @EnvironmentObject private var authStore: AuthStore
+    @Environment(\.modelContext) private var modelContext
+    @Query private var coaches: [Coach]
 
-#if DEBUG
-enum DebugSeed {
-    static func seedIfRequested(context: ModelContext) {
-        guard ProcessInfo.processInfo.arguments.contains("--seed-demo") else { return }
+    @State private var loadedUserID: UUID?
+    @State private var isLoadingCloud = false
+    @State private var loadError: String?
 
-        // Wipe existing
-        try? context.delete(model: Coach.self)
-        try? context.delete(model: TeamGroup.self)
-        try? context.delete(model: Player.self)
-        try? context.delete(model: TrainingSession.self)
-        try? context.delete(model: AttendanceRecord.self)
-        try? context.delete(model: FeeRecord.self)
-
-        let coach = Coach(name: "Vladimir Panev", club: "CSKA Sofia")
-        context.insert(coach)
-
-        let groupsData: [(String, String, String, String, Double, [String])] = [
-            ("U18 Women", "U18", "#FF2D55", "👧", 45,
-             ["Maria Ivanova","Elena Petrova","Viktoria Dimitrova","Sofia Nikolova","Ralitsa Todorova","Deni Georgieva"]),
-            ("U16 Men",   "U16", "#007AFF", "👦", 40,
-             ["Alex Stoyanov","Martin Iliev","Kaloyan Petrov","Ivaylo Dimitrov","Nikola Vasilev"]),
-            ("U14 Girls", "U14", "#AF52DE", "👧", 35,
-             ["Anna Ivanova","Lilia Marinova","Kristina Popova","Gabriela Todorova"])
-        ]
-
-        for (name, age, hex, emoji, fee, players) in groupsData {
-            let g = TeamGroup(name: name, ageCategory: age, colorHex: hex, emoji: emoji, monthlyFee: fee)
-            g.trainingDays = [1, 3, 5]
-            context.insert(g)
-            coach.groups.append(g)
-
-            for (i, playerName) in players.enumerated() {
-                let p = Player(fullName: playerName, jerseyNumber: i + 1,
-                               position: [.setter, .outsideHitter, .libero, .middleBlocker, .oppositeHitter][i % 5])
-                context.insert(p)
-                g.players.append(p)
-                // Mark some as paid for current month
-                if i < players.count - 1 {
-                    let now = Date()
-                    let m = Calendar.current.component(.month, from: now)
-                    let y = Calendar.current.component(.year, from: now)
-                    let fr = FeeRecord(month: m, year: y, status: .paid)
-                    fr.amount = fee
-                    fr.paymentDate = now
-                    context.insert(fr)
-                    p.feeRecords.append(fr)
+    var body: some View {
+        Group {
+            if authStore.isLoading || isLoadingCloud {
+                CloudLoadingView()
+            } else if let session = authStore.session {
+                if let coach = coaches.first(where: { $0.remoteID == session.user.id }) {
+                    MainTabView(coach: coach)
+                } else if let loadError {
+                    CloudLoadErrorView(
+                        message: loadError,
+                        onRetry: { Task { await load(userID: session.user.id, force: true) } },
+                        onLogOut: { Task { await authStore.signOut() } }
+                    )
+                } else {
+                    CreateCloudProfileView(userID: session.user.id) {
+                        await load(userID: session.user.id, force: true)
+                    }
                 }
+            } else {
+                WelcomeView()
             }
         }
+        .task(id: authStore.session?.user.id) {
+            guard let userID = authStore.session?.user.id else {
+                loadedUserID = nil
+                return
+            }
+            await load(userID: userID)
+        }
+    }
 
-        try? context.save()
+    private func load(userID: UUID, force: Bool = false) async {
+        guard force || loadedUserID != userID else { return }
+        isLoadingCloud = true
+        loadError = nil
+        do {
+            try await CloudDataService.shared.loadAll(ownerID: userID, into: modelContext)
+            loadedUserID = userID
+        } catch {
+            loadError = error.localizedDescription
+        }
+        isLoadingCloud = false
     }
 }
-#endif
 
-// MARK: - Logged-in root
+private struct CreateCloudProfileView: View {
+    let userID: UUID
+    let onCreated: () async -> Void
 
-struct LoggedInRootView: View {
-    @Query private var coaches: [Coach]
-    @AppStorage("isLoggedIn") private var isLoggedIn = false
-    @AppStorage("coachName") private var savedCoachName = ""
+    @State private var name = ""
+    @State private var club = ""
+    @State private var role: CoachRole = .headCoach
+    @State private var photoData: Data?
+    @State private var photoItem: PhotosPickerItem?
+    @State private var step = 0
+    @State private var isSaving = false
+    @State private var errorMessage: String?
 
-    /// Resolve the active coach deterministically.
-    ///
-    /// Prefer the coach whose name matches `savedCoachName` (the account the
-    /// user actually created / logged into). Falling back to `.first` was
-    /// unsafe because `@Query` has no stable ordering — when multiple coach
-    /// rows exist in the store (e.g. leftovers from a previous install or
-    /// stale debug-seed data), a tab switch could silently swap the active
-    /// coach to a different row.
-    private var activeCoach: Coach? {
-        let trimmed = savedCoachName.trimmed
-        if !trimmed.isEmpty,
-           let match = coaches.first(where: {
-               $0.name.localizedCaseInsensitiveCompare(trimmed) == .orderedSame
-           }) {
-            return match
-        }
-        return coaches.first
+    private var canContinue: Bool { step == 1 || !name.trimmed.isEmpty }
+    private var firstName: String {
+        name.trimmed.split(separator: " ").first.map(String.init) ?? "Coach"
     }
 
     var body: some View {
-        if let coach = activeCoach {
-            MainTabView(coach: coach)
-        } else {
-            // isLoggedIn=true but no coach in store — reset and show welcome
-            WelcomeView()
-                .onAppear { isLoggedIn = false }
+        NavigationStack {
+            ZStack {
+                AuroraBackground()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        onboardingHeader
+
+                        Group {
+                            if step == 0 {
+                                identityStep
+                                    .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
+                                                            removal: .move(edge: .leading).combined(with: .opacity)))
+                            } else {
+                                teamStep
+                                    .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
+                                                            removal: .move(edge: .leading).combined(with: .opacity)))
+                            }
+                        }
+
+                        if let errorMessage {
+                            Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                                .font(.footnote)
+                                .foregroundStyle(AppTheme.coral)
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(AppTheme.coral.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+                        }
+
+                        Spacer(minLength: 110)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                }
+                .scrollDismissesKeyboard(.interactively)
+            }
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 10) {
+                    if step == 1 {
+                        Button {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.86)) { step = 0 }
+                        } label: {
+                            Label("Back", systemImage: "chevron.left")
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AppTheme.deepBlue)
+                    }
+
+                    Button {
+                        if step == 0 {
+                            withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) { step = 1 }
+                        } else {
+                            Task { await createProfile() }
+                        }
+                    } label: {
+                        HStack(spacing: 9) {
+                            if isSaving {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text(step == 0 ? "Continue" : "Enter VolleyTracker")
+                                Image(systemName: step == 0 ? "arrow.right" : "figure.volleyball")
+                            }
+                        }
+                    }
+                    .buttonStyle(CourtPrimaryButtonStyle())
+                    .disabled(!canContinue || isSaving)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+                .background(.ultraThinMaterial)
+            }
+            .onChange(of: photoItem) { _, item in
+                Task {
+                    if let data = try? await item?.loadTransferable(type: Data.self) {
+                        photoData = data
+                    }
+                }
+            }
+        }
+    }
+
+    private var onboardingHeader: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                HStack(spacing: 9) {
+                    CourtIconBadge(icon: "figure.volleyball", tint: AppTheme.sun, size: 38)
+                    Text("VOLLEYTRACKER")
+                        .font(.caption.weight(.black))
+                        .tracking(1.4)
+                        .foregroundStyle(AppTheme.deepBlue)
+                }
+                Spacer()
+                Text("STEP \(step + 1) OF 2")
+                    .font(.caption2.weight(.bold))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(AppTheme.ocean.opacity(0.12))
+                    Capsule()
+                        .fill(AppTheme.heroGradient)
+                        .frame(width: proxy.size.width * (step == 0 ? 0.5 : 1))
+                }
+            }
+            .frame(height: 6)
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text(step == 0 ? "Build your coach profile" : "Set up your workspace")
+                    .font(.system(size: 31, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+                Text(step == 0
+                     ? "Add the identity your teams will recognize."
+                     : "Choose your role and tell us where you coach.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var identityStep: some View {
+        VStack(spacing: 24) {
+            PhotosPicker(selection: $photoItem, matching: .images) {
+                VStack(spacing: 11) {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.heroGradient)
+                            .frame(width: 118, height: 118)
+                            .blur(radius: 18)
+                            .opacity(0.24)
+                        PlayerAvatarView(photoData: photoData, name: name, size: 100)
+                            .overlay(Circle().strokeBorder(AppTheme.heroGradient, lineWidth: 3))
+                            .overlay(alignment: .bottomTrailing) {
+                                Image(systemName: "camera.fill")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(AppTheme.navy)
+                                    .frame(width: 34, height: 34)
+                                    .background(AppTheme.sun, in: Circle())
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                            }
+                    }
+                    Text(photoData == nil ? "Add profile photo" : "Change profile photo")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(AppTheme.deepBlue)
+                }
+            }
+            .buttonStyle(.plain)
+
+            CourtTextField(
+                label: "Full name",
+                placeholder: "e.g. Alex Morgan",
+                icon: "person.fill",
+                text: $name,
+                isRequired: true,
+                helper: "This appears on your coach profile.",
+                contentType: .name,
+                capitalization: .words,
+                submitLabel: .done
+            )
+        }
+    }
+
+    private var teamStep: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 10) {
+                CourtSectionLabel("Your role", subtitle: "You can update this later.")
+                ForEach(CoachRole.allCases, id: \.self) { option in
+                    Button {
+                        role = option
+                        UISelectionFeedbackGenerator().selectionChanged()
+                    } label: {
+                        HStack(spacing: 13) {
+                            CourtIconBadge(icon: option.icon,
+                                           tint: role == option ? AppTheme.sun : AppTheme.ocean,
+                                           size: 42)
+                            Text(option.rawValue)
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: role == option ? "checkmark.circle.fill" : "circle")
+                                .font(.title3)
+                                .foregroundStyle(role == option ? AppTheme.success : Color.secondary.opacity(0.45))
+                        }
+                        .padding(14)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                                .strokeBorder(role == option ? AnyShapeStyle(AppTheme.heroGradient)
+                                              : AnyShapeStyle(AppTheme.ocean.opacity(0.15)),
+                                              lineWidth: role == option ? 2 : 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            CourtTextField(
+                label: "Club or organization",
+                placeholder: "Optional",
+                icon: "building.2.fill",
+                text: $club,
+                helper: "Leave this blank if you coach independently.",
+                contentType: .organizationName,
+                capitalization: .words,
+                submitLabel: .done
+            )
+
+            HStack(spacing: 12) {
+                CourtIconBadge(icon: "checkmark.shield.fill", tint: AppTheme.success, size: 42)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Ready for the first serve, \(firstName)")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Your profile and team data sync securely across devices.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(16)
+            .background(AppTheme.success.opacity(0.09), in: RoundedRectangle(cornerRadius: 17))
+        }
+    }
+
+    private func createProfile() async {
+        isSaving = true
+        errorMessage = nil
+        do {
+            try await CloudDataService.shared.upsertProfile(
+                ownerID: userID,
+                name: name.trimmed,
+                club: club.trimmed,
+                role: role,
+                photoData: photoData
+            )
+            await onCreated()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isSaving = false
+    }
+}
+
+private struct CloudLoadingView: View {
+    @State private var isAnimating = false
+
+    var body: some View {
+        ZStack {
+            AuroraBackground()
+            VStack(spacing: 18) {
+                ZStack {
+                    Circle()
+                        .stroke(AppTheme.ocean.opacity(0.14), lineWidth: 8)
+                        .frame(width: 84, height: 84)
+                    Circle()
+                        .trim(from: 0, to: 0.68)
+                        .stroke(AppTheme.heroGradient, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .frame(width: 84, height: 84)
+                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                    Image(systemName: "figure.volleyball")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(AppTheme.deepBlue)
+                }
+                Text("Preparing your court…")
+                    .font(.headline)
+                Text("Syncing teams, sessions and fees")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                isAnimating = true
+            }
+        }
+    }
+}
+
+private struct CloudLoadErrorView: View {
+    let message: String
+    let onRetry: () -> Void
+    let onLogOut: () -> Void
+
+    var body: some View {
+        ZStack {
+            AuroraBackground()
+            GlassCard {
+                VStack(spacing: 18) {
+                    CourtIconBadge(icon: "icloud.slash.fill", tint: AppTheme.coral, size: 58)
+                    Text("We couldn’t sync your data")
+                        .font(.title3.weight(.bold))
+                    Text(message)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button("Try Again", action: onRetry)
+                        .buttonStyle(CourtPrimaryButtonStyle())
+                    Button("Log Out", role: .destructive, action: onLogOut)
+                        .font(.subheadline.weight(.semibold))
+                }
+                .padding(22)
+            }
+            .padding(24)
         }
     }
 }

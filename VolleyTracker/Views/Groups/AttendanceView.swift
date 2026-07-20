@@ -17,21 +17,41 @@ struct AttendanceView: View {
     var body: some View {
         Group {
             if sessions.isEmpty {
-                ContentUnavailableView {
-                    Label("No Sessions Yet", systemImage: "calendar.badge.plus")
-                } description: {
-                    Text("Start your first training session for \(group.name).")
-                } actions: {
-                    Button("Start Session") { showingAddTraining = true }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
+                VStack(spacing: 18) {
+                    CourtIconBadge(icon: "checkmark.circle.fill", tint: AppTheme.success, size: 70)
+                    VStack(spacing: 6) {
+                        Text("Attendance starts here")
+                            .font(.title3.weight(.bold))
+                        Text("Create a session for \(group.name) and mark the roster in quick mode.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    Button { showingAddTraining = true } label: {
+                        Label("Start First Session", systemImage: "plus")
+                    }
+                    .buttonStyle(CourtPrimaryButtonStyle())
                 }
+                .padding(24)
+                .frame(maxWidth: 350)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(AppTheme.ocean.opacity(0.15), lineWidth: 1)
+                )
+                .shadow(color: AppTheme.navy.opacity(0.10), radius: 20, y: 10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 22)
+                .padding(.bottom, 70)
             } else {
                 List {
                     ForEach(sessions) { session in
                         NavigationLink(destination: TrainingAttendanceView(session: session)) {
                             SessionRowView(session: session, totalPlayers: group.players.count)
                         }
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) { delete(session) } label: {
                                 Label("Delete", systemImage: "trash")
@@ -39,7 +59,8 @@ struct AttendanceView: View {
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .toolbar {
@@ -55,8 +76,10 @@ struct AttendanceView: View {
     }
 
     private func delete(_ session: TrainingSession) {
+        let remoteID = session.remoteID
         group.trainingSessions.removeAll { $0.persistentModelID == session.persistentModelID }
         modelContext.delete(session)
+        Task { try? await CloudDataService.shared.delete(table: "training_sessions", id: remoteID) }
     }
 }
 
@@ -103,7 +126,12 @@ struct SessionRowView: View {
                     .foregroundStyle(Color(.tertiaryLabel))
             }
         }
-        .padding(.vertical, 4)
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .strokeBorder(AppTheme.ocean.opacity(0.14), lineWidth: 1)
+        )
     }
 
     private func statusBadge(_ count: Int, status: AttendanceStatus) -> some View {

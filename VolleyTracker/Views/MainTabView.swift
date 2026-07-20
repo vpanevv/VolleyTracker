@@ -6,14 +6,14 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             GroupsListView(coach: coach)
-                .tabItem { Label("Groups", systemImage: "person.3.fill") }
+                .tabItem { Label("Home", systemImage: "house.fill") }
 
             CalendarTabView(coach: coach)
-                .tabItem { Label("Calendar", systemImage: "calendar") }
+                .tabItem { Label("Schedule", systemImage: "calendar.badge.clock") }
 
             SettingsView(coach: coach)
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
         }
-        .tint(.blue)
+        .tint(AppTheme.ocean)
     }
 }

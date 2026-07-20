@@ -20,14 +20,18 @@ struct AddTrainingView: View {
         _selectedGroup = State(initialValue: preselectedGroup ?? groups.first)
         _date = State(initialValue: prefilledDate)
 
-        // Default: 17:00 – 18:30 on prefilledDate
+        // Use the group's recurring time when opening a scheduled occurrence.
         var start = Calendar.current.dateComponents([.year, .month, .day], from: prefilledDate)
-        start.hour = 17; start.minute = 0
+        if let scheduledTime = preselectedGroup?.trainingTime {
+            let scheduledComponents = Calendar.current.dateComponents([.hour, .minute], from: scheduledTime)
+            start.hour = scheduledComponents.hour
+            start.minute = scheduledComponents.minute
+        } else {
+            start.hour = 17
+            start.minute = 0
+        }
         let startDate = Calendar.current.date(from: start) ?? prefilledDate
-
-        var end = Calendar.current.dateComponents([.year, .month, .day], from: prefilledDate)
-        end.hour = 18; end.minute = 30
-        let endDate = Calendar.current.date(from: end) ?? prefilledDate
+        let endDate = Calendar.current.date(byAdding: .minute, value: 90, to: startDate) ?? startDate
 
         _startTime = State(initialValue: startDate)
         _endTime   = State(initialValue: endDate)
@@ -82,7 +86,7 @@ struct AddTrainingView: View {
                                             }
                                         }
                                         .labelsHidden()
-                                        .tint(Color(red: 0.24, green: 0.40, blue: 1.00))
+                                        .tint(AppTheme.ocean)
                                     }
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
@@ -186,7 +190,7 @@ struct AddTrainingView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 7)
                             .background(AppTheme.heroGradient, in: Capsule())
-                            .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.35),
+                            .shadow(color: AppTheme.deepBlue.opacity(0.28),
                                     radius: 10, x: 0, y: 5)
                             .opacity(canSave ? 1 : 0.5)
                     }
@@ -206,7 +210,7 @@ struct AddTrainingView: View {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .strokeBorder(AppTheme.softGradient.opacity(0.55), lineWidth: 1)
             )
-            .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.10),
+            .shadow(color: AppTheme.navy.opacity(0.10),
                     radius: 18, x: 0, y: 10)
     }
 
@@ -221,6 +225,9 @@ struct AddTrainingView: View {
         )
         modelContext.insert(session)
         group.trainingSessions.append(session)
+        Task {
+            try? await CloudDataService.shared.upsertSession(session, groupID: group.remoteID)
+        }
 
         dismiss()
     }
@@ -250,7 +257,7 @@ private struct ThemedDatePickerRow: View {
             Spacer()
             DatePicker("", selection: $selection, displayedComponents: components)
                 .labelsHidden()
-                .tint(Color(red: 0.24, green: 0.40, blue: 1.00))
+                .tint(AppTheme.ocean)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
