@@ -9,7 +9,7 @@ enum GroupTab: String, CaseIterable {
         switch self {
         case .players: "person.2.fill"
         case .attendance: "checkmark.circle.fill"
-        case .fees: "eurosign.circle.fill"
+        case .fees: "banknote.fill"
         }
     }
 }
@@ -22,13 +22,16 @@ struct GroupDetailView: View {
     }()
     @State private var searchText = ""
     @State private var showingEditGroup = false
+    @State private var showingAddPlayer = false
+    @State private var showingAddTraining = false
+    private var teamTint: Color { Color(teamHex: group.colorHex) }
 
     var body: some View {
         ZStack {
             CourtWorkspaceBackground()
 
             VStack(spacing: 0) {
-                ThemedSegmentedPicker(selection: $selectedTab)
+                ThemedSegmentedPicker(selection: $selectedTab, tint: teamTint)
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
 
@@ -55,21 +58,71 @@ struct GroupDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { showingEditGroup = true } label: {
-                    Image(systemName: "pencil")
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button { primaryAction() } label: {
+                    Image(systemName: primaryActionIcon)
                         .font(.subheadline.weight(.bold))
-                        .foregroundStyle(AppTheme.deepBlue)
+                        .foregroundStyle(teamTint)
                         .frame(width: 38, height: 38)
                         .background(.regularMaterial, in: Circle())
                 }
-                .accessibilityLabel("Edit team and training schedule")
+                .accessibilityLabel(primaryActionLabel)
+
+                Menu {
+                    Button { showingAddPlayer = true } label: {
+                        Label("Add Player", systemImage: "person.badge.plus")
+                    }
+                    Button { showingAddTraining = true } label: {
+                        Label("Add Training", systemImage: "calendar.badge.plus")
+                    }
+                    Button { showingEditGroup = true } label: {
+                        Label("Edit Team", systemImage: "pencil")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle.fill")
+                        .font(.title3)
+                        .heroGradientForeground()
+                }
+                .accessibilityLabel("Team actions")
             }
         }
         .sheet(isPresented: $showingEditGroup) {
             AddEditGroupView(coach: coach, group: group)
         }
+        .sheet(isPresented: $showingAddPlayer) {
+            AddEditPlayerView(group: group)
+        }
+        .sheet(isPresented: $showingAddTraining) {
+            AddTrainingView(groups: [group], preselectedGroup: group)
+        }
         .animation(.easeOut(duration: 0.2), value: selectedTab)
+    }
+
+    private var primaryActionIcon: String {
+        switch selectedTab {
+        case .players: "person.badge.plus"
+        case .attendance: "calendar.badge.plus"
+        case .fees: "banknote.fill"
+        }
+    }
+
+    private var primaryActionLabel: String {
+        switch selectedTab {
+        case .players: "Add player"
+        case .attendance: "Add training"
+        case .fees: "Edit monthly fee"
+        }
+    }
+
+    private func primaryAction() {
+        switch selectedTab {
+        case .players:
+            showingAddPlayer = true
+        case .attendance:
+            showingAddTraining = true
+        case .fees:
+            showingEditGroup = true
+        }
     }
 }
 
@@ -114,6 +167,7 @@ private struct GroupPlayerSearchField: View {
 
 struct ThemedSegmentedPicker: View {
     @Binding var selection: GroupTab
+    let tint: Color
     @Namespace private var ns
 
     var body: some View {
@@ -129,7 +183,7 @@ struct ThemedSegmentedPicker: View {
                     HStack(spacing: 6) {
                         Image(systemName: tab.icon)
                             .font(.caption.weight(.bold))
-                        Text(tab.rawValue)
+                        Text(LocalizedStringKey(tab.rawValue))
                             .font(.footnote.weight(.bold))
                     }
                         .foregroundStyle(isSelected ? AnyShapeStyle(Color.white)
@@ -139,9 +193,15 @@ struct ThemedSegmentedPicker: View {
                         .background {
                             if isSelected {
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(AppTheme.deepGradient)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [tint, tint.opacity(0.72), AppTheme.ocean],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
                                     .matchedGeometryEffect(id: "pill", in: ns)
-                                    .shadow(color: AppTheme.deepBlue.opacity(0.22),
+                                    .shadow(color: tint.opacity(0.22),
                                             radius: 8, x: 0, y: 4)
                             }
                         }
@@ -153,7 +213,7 @@ struct ThemedSegmentedPicker: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 19, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 19, style: .continuous)
-                .strokeBorder(AppTheme.ocean.opacity(0.14), lineWidth: 1)
+                .strokeBorder(tint.opacity(0.18), lineWidth: 1)
         )
         .shadow(color: AppTheme.navy.opacity(0.08), radius: 12, y: 6)
     }

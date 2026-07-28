@@ -5,6 +5,9 @@ struct SettingsView: View {
     @EnvironmentObject private var authStore: AuthStore
 
     @State private var showingEditProfile = false
+    @AppStorage(AppLanguage.storageKey) private var languageCode = AppLanguage.defaultLanguage.rawValue
+    @AppStorage(AppAppearance.storageKey) private var appearanceCode = AppAppearance.system.rawValue
+    @AppStorage(AppCurrency.storageKey) private var currencyCode = AppCurrency.eur.rawValue
 
     var body: some View {
         NavigationStack {
@@ -35,7 +38,7 @@ struct SettingsView: View {
                                 Text(coach.name)
                                     .font(.title2.weight(.bold))
                                     .foregroundStyle(Color(.label))
-                                Text(coach.role.rawValue)
+                                Text(LocalizedStringKey(coach.role.rawValue))
                                     .font(.caption.weight(.bold))
                                     .foregroundStyle(AppTheme.deepBlue)
                                     .padding(.horizontal, 10)
@@ -99,6 +102,41 @@ struct SettingsView: View {
                     }
 
                     Section {
+                        PreferencePickerRow(icon: "globe", tint: AppTheme.ocean) {
+                            Picker("Language", selection: $languageCode) {
+                                ForEach(AppLanguage.allCases) { language in
+                                    Text(language.nativeName).tag(language.rawValue)
+                                }
+                            }
+                        }
+
+                        PreferencePickerRow(icon: "moon.stars.fill", tint: AppTheme.deepBlue) {
+                            Picker("Appearance", selection: $appearanceCode) {
+                                ForEach(AppAppearance.allCases) { appearance in
+                                    Label(
+                                        LocalizedStringKey(appearance.title),
+                                        systemImage: appearance.icon
+                                    )
+                                    .tag(appearance.rawValue)
+                                }
+                            }
+                        }
+
+                        PreferencePickerRow(icon: "banknote.fill", tint: AppTheme.success) {
+                            Picker("Fee currency", selection: $currencyCode) {
+                                ForEach(AppCurrency.allCases) { currency in
+                                    Text("\(currency.title) · \(currency.symbol)")
+                                        .tag(currency.rawValue)
+                                }
+                            }
+                        }
+                    } header: {
+                        SectionHeader(title: "PREFERENCES")
+                    } footer: {
+                        Text("Changing currency updates labels only; existing amounts are not converted.")
+                    }
+
+                    Section {
                         StatRow(icon: "app.badge",
                                 tint: .teal,
                                 label: "Version",
@@ -135,7 +173,7 @@ struct SettingsView: View {
                 .listStyle(.insetGrouped)
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Profile")
+            .navigationTitle(Text("Profile"))
             .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingEditProfile) {
                 EditProfileView(coach: coach)
@@ -148,12 +186,35 @@ struct SettingsView: View {
     }
 }
 
+private struct PreferencePickerRow<Content: View>: View {
+    let icon: String
+    let tint: Color
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(tint.opacity(0.18))
+                    .frame(width: 36, height: 36)
+                Image(systemName: icon)
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(tint)
+            }
+
+            content()
+                .pickerStyle(.menu)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
 // MARK: - StatRow
 
 private struct StatRow: View {
     let icon: String
     let tint: Color
-    let label: String
+    let label: LocalizedStringKey
     let value: String
 
     var body: some View {
@@ -181,7 +242,7 @@ private struct StatRow: View {
 // MARK: - SectionHeader
 
 private struct SectionHeader: View {
-    let title: String
+    let title: LocalizedStringKey
     var body: some View {
         Text(title)
             .font(.caption.weight(.bold))

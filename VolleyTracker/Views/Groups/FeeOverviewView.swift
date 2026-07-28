@@ -4,6 +4,8 @@ import SwiftData
 struct FeeOverviewView: View {
     let group: TeamGroup
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.locale) private var locale
+    @AppStorage(AppCurrency.storageKey) private var currencyCode = AppCurrency.eur.rawValue
 
     @State private var year = Calendar.current.component(.year, from: Date())
     @State private var unpaidOnly = false
@@ -44,19 +46,31 @@ struct FeeOverviewView: View {
 
     private func markPaid(_ player: Player) {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        let savedRecord: FeeRecord
+        let savedRecord = paidRecord(for: player)
+        Task { try? await CloudDataService.shared.upsertFee(savedRecord, playerID: player.remoteID) }
+    }
+
+    private func markVisiblePlayersPaid() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        let fees = visiblePlayers.map { player in
+            (fee: paidRecord(for: player), playerID: player.remoteID)
+        }
+        Task { try? await CloudDataService.shared.upsertFees(fees) }
+    }
+
+    private func paidRecord(for player: Player) -> FeeRecord {
         if let rec = player.feeRecords.first(where: { $0.month == currentMonth && $0.year == currentYear }) {
             rec.status = .paid
             rec.paymentDate = Date()
-            savedRecord = rec
-        } else {
-            let rec = FeeRecord(month: currentMonth, year: currentYear, status: .paid)
-            rec.paymentDate = Date()
-            modelContext.insert(rec)
-            player.feeRecords.append(rec)
-            savedRecord = rec
+            return rec
         }
-        Task { try? await CloudDataService.shared.upsertFee(savedRecord, playerID: player.remoteID) }
+
+        let rec = FeeRecord(month: currentMonth, year: currentYear, status: .paid)
+        rec.paymentDate = Date()
+        rec.amount = group.monthlyFee > 0 ? group.monthlyFee : nil
+        modelContext.insert(rec)
+        player.feeRecords.append(rec)
+        return rec
     }
 
     private var unpaidPlayersInGroup: [Player] {
@@ -79,10 +93,7 @@ struct FeeOverviewView: View {
     }
 
     private func formatEuro(_ value: Double) -> String {
-        if value.truncatingRemainder(dividingBy: 1) == 0 {
-            return "€\(Int(value))"
-        }
-        return String(format: "€%.2f", value)
+        (AppCurrency(rawValue: currencyCode) ?? .eur).format(value, locale: locale)
     }
 
     private var paidCount: Int {
@@ -98,7 +109,7 @@ struct FeeOverviewView: View {
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: "eurosign.circle.fill")
+                Image(systemName: "banknote.fill")
                     .font(.title3)
                     .foregroundStyle(AppTheme.ocean)
                 Text("To Collect · \(monthLabel)")
@@ -147,29 +158,42 @@ struct FeeOverviewView: View {
     var body: some View {
         Group {
             if group.players.isEmpty {
-                ContentUnavailableView {
-                    Label("No Players", systemImage: "creditcard")
-                } description: {
-                    Text("Add players to this group to start tracking fees.")
+                VStack(spacing: 18) {
+                    CourtIconBadge(icon: "creditcard", tint: AppTheme.ocean, size: 74)
+                    VStack(spacing: 6) {
+                        Text("Fees need a roster")
+                            .font(.title3.weight(.bold))
+                        Text("Add players to this group, then monthly fee tracking will appear here automatically.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
                 }
+                .padding(24)
+                .frame(maxWidth: 350)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(AppTheme.ocean.opacity(0.15), lineWidth: 1)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 22)
+                .padding(.bottom, 70)
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
-                        // Export PDF button
-                        Button(action: exportPDF) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "square.and.arrow.up")
-                                    .font(.subheadline.weight(.semibold))
-                                Text("Export Collected Fees (PDF)")
-                                    .font(.subheadline.weight(.semibold))
+                        HStack(spacing: 10) {
+                            Button(action: exportPDF) {
+                                Label("Export", systemImage: "square.and.arrow.up")
                             }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(AppTheme.heroGradient, in: .rect(cornerRadius: 16))
-                            .shadow(color: AppTheme.deepBlue.opacity(0.24), radius: 12, y: 6)
+                            .buttonStyle(CourtSecondaryButtonStyle())
+
+                            Button(action: markVisiblePlayersPaid) {
+                                Label("Mark Visible Paid", systemImage: "checkmark.circle.fill")
+                            }
+                            .buttonStyle(CourtPrimaryButtonStyle())
+                            .disabled(visiblePlayers.isEmpty)
                         }
-                        .buttonStyle(.plain)
                         .padding(.horizontal)
                         .padding(.top, 12)
                         .padding(.bottom, 8)
@@ -213,27 +237,28 @@ struct FeeOverviewView: View {
                                 .padding(.bottom, 12)
                         }
 
-                        // Month header row
-                        HStack(spacing: 0) {
-                            Text("Player")
-                                .font(.caption2)
-                                .foregroundStyle(Color(.secondaryLabel))
-                                .frame(width: 120, alignment: .leading)
-                                .padding(.leading, 4)
-                            ForEach(FeeRecord.monthNames, id: \.self) { m in
-                                Text(m)
-                                    .font(.system(size: 9, weight: .medium))
-                                    .foregroundStyle(Color(.secondaryLabel))
-                                    .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, 6)
+                        CourtSectionLabel("Player Fees", subtitle: "Current month first. Open a card to adjust older months.")
+                            .padding(.horizontal)
+                            .padding(.bottom, 8)
 
-                        // Player rows
-                        VStack(spacing: 3) {
-                            ForEach(visiblePlayers) { player in
-                                FeePlayerRow(player: player, year: year, modelContext: modelContext)
+                        VStack(spacing: 12) {
+                            if visiblePlayers.isEmpty {
+                                Text("No players match this filter.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(.regularMaterial, in: .rect(cornerRadius: 16))
+                            } else {
+                                ForEach(visiblePlayers) { player in
+                                    FeePlayerCard(
+                                        player: player,
+                                        year: year,
+                                        currentMonth: currentMonth,
+                                        monthlyFee: group.monthlyFee,
+                                        modelContext: modelContext
+                                    )
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -277,60 +302,191 @@ private struct IdentifiedURL: Identifiable {
     var id: String { url.absoluteString }
 }
 
-struct FeePlayerRow: View {
+struct FeePlayerCard: View {
     let player: Player
     let year: Int
+    let currentMonth: Int
+    let monthlyFee: Double
     let modelContext: ModelContext
+
+    @State private var isExpanded = false
+    @Environment(\.locale) private var locale
+    @AppStorage(AppCurrency.storageKey) private var currencyCode = AppCurrency.eur.rawValue
+
+    private var currentStatus: FeeStatus {
+        record(for: currentMonth)?.status ?? .unpaid
+    }
+
+    private var paidMonthsCount: Int {
+        (1...12).filter { record(for: $0)?.status == .paid }.count
+    }
+
+    private var amountText: String? {
+        guard monthlyFee > 0 else { return nil }
+        return (AppCurrency(rawValue: currencyCode) ?? .eur)
+            .format(monthlyFee, locale: locale)
+    }
 
     private func record(for month: Int) -> FeeRecord? {
         player.feeRecords.first { $0.month == month && $0.year == year }
     }
 
-    private func toggle(month: Int) {
+    private func set(month: Int, status: FeeStatus) {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         let savedRecord: FeeRecord
-        if let r = record(for: month) {
-            r.status = r.status.next
-            savedRecord = r
+        if let record = record(for: month) {
+            record.status = status
+            record.paymentDate = status == .paid ? Date() : nil
+            savedRecord = record
         } else {
-            let r = FeeRecord(month: month, year: year, status: .paid)
-            modelContext.insert(r)
-            player.feeRecords.append(r)
-            savedRecord = r
+            let record = FeeRecord(month: month, year: year, status: status)
+            record.paymentDate = status == .paid ? Date() : nil
+            record.amount = monthlyFee > 0 ? monthlyFee : nil
+            modelContext.insert(record)
+            player.feeRecords.append(record)
+            savedRecord = record
         }
         Task { try? await CloudDataService.shared.upsertFee(savedRecord, playerID: player.remoteID) }
     }
 
-    var body: some View {
-        HStack(spacing: 0) {
-            Text(player.fullName)
-                .font(.caption)
-                .lineLimit(1)
-                .frame(width: 120, alignment: .leading)
-                .padding(.leading, 4)
+    private func cycle(month: Int) {
+        set(month: month, status: (record(for: month)?.status ?? .unpaid).next)
+    }
 
-            ForEach(1...12, id: \.self) { m in
-                let status = record(for: m)?.status ?? .unpaid
-                Button { toggle(month: m) } label: {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(status.color.opacity(0.85))
-                        .frame(height: 22)
-                        .overlay {
-                            if status == .partial {
-                                Text("P")
-                                    .font(.system(size: 7, weight: .black))
-                                    .foregroundStyle(.white)
-                            }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
+                PlayerAvatarView(photoData: player.photoData, name: player.fullName, size: 44)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(player.fullName)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    HStack(spacing: 6) {
+                        Text("\(paidMonthsCount)/12 paid")
+                        if let amountText {
+                            Text("·")
+                            Text(amountText)
                         }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 1)
-                .sensoryFeedback(.impact, trigger: status)
+
+                Spacer()
+
+                FeeStatusBadge(status: currentStatus, monthName: FeeRecord.monthNames[currentMonth - 1])
+            }
+
+            HStack(spacing: 10) {
+                Button {
+                    set(month: currentMonth, status: .paid)
+                } label: {
+                    Label("Mark \(FeeRecord.monthNames[currentMonth - 1]) Paid", systemImage: "checkmark.circle.fill")
+                }
+                .buttonStyle(CourtPrimaryButtonStyle())
+                .disabled(currentStatus == .paid)
+
+                Button {
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) {
+                        isExpanded.toggle()
+                    }
+                } label: {
+                    Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(AppTheme.deepBlue)
+                        .frame(width: 48, height: 48)
+                        .background(AppTheme.deepBlue.opacity(0.10), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isExpanded ? "Hide monthly fee history" : "Show monthly fee history")
+            }
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Monthly Status")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.secondary)
+
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        ForEach(1...12, id: \.self) { month in
+                            let status = record(for: month)?.status ?? .unpaid
+                            FeeMonthButton(
+                                monthName: FeeRecord.monthNames[month - 1],
+                                status: status,
+                                isCurrentMonth: month == currentMonth,
+                                action: { cycle(month: month) }
+                            )
+                        }
+                    }
+                }
+                .padding(12)
+                .background(AppTheme.ocean.opacity(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 4)
-        .background(.regularMaterial, in: .rect(cornerRadius: 10))
+        .padding(14)
+        .background(.regularMaterial, in: .rect(cornerRadius: 18))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .strokeBorder(currentStatus.color.opacity(0.24), lineWidth: 1)
+        )
+    }
+}
+
+private struct FeeStatusBadge: View {
+    let status: FeeStatus
+    let monthName: String
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            Text(LocalizedStringKey(monthName))
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.secondary)
+            Label(LocalizedStringKey(status.rawValue), systemImage: status.sfSymbol)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(status.color)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 6)
+                .background(status.color.opacity(0.13), in: Capsule())
+        }
+    }
+}
+
+private struct FeeMonthButton: View {
+    let monthName: String
+    let status: FeeStatus
+    let isCurrentMonth: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 7) {
+                Image(systemName: status.sfSymbol)
+                    .font(.caption.weight(.bold))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(LocalizedStringKey(monthName))
+                        .font(.caption.weight(.bold))
+                    Text(LocalizedStringKey(status.rawValue))
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(status == .unpaid ? status.color : .white)
+            .padding(.horizontal, 10)
+            .frame(minHeight: 44)
+            .background(
+                status == .unpaid ? status.color.opacity(0.12) : status.color,
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(isCurrentMonth ? AppTheme.deepBlue.opacity(0.55) : status.color.opacity(0.22), lineWidth: isCurrentMonth ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(monthName) \(status.rawValue)")
     }
 }
 

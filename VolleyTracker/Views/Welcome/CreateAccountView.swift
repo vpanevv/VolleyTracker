@@ -56,7 +56,7 @@ struct CreateAccountView: View {
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .strokeBorder(AppTheme.softGradient.opacity(0.55), lineWidth: 1)
                     )
-                    .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.10),
+                    .shadow(color: AppTheme.deepBlue.opacity(0.10),
                             radius: 18, x: 0, y: 10)
                     .padding(.horizontal, 16)
 
@@ -87,7 +87,7 @@ struct CreateAccountView: View {
                 sparkleRotation = 360
             }
         }
-        .navigationTitle("Create Account")
+        .navigationTitle(Text("Create Account"))
         .navigationBarTitleDisplayMode(.large)
         .toolbarBackground(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
@@ -101,7 +101,7 @@ struct CreateAccountView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
                 .background(AppTheme.heroGradient, in: Capsule())
-                .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.4),
+                .shadow(color: AppTheme.deepBlue.opacity(0.24),
                         radius: 16, x: 0, y: 8)
                 .opacity(canSubmit ? 1 : 0.5)
             }
@@ -160,7 +160,7 @@ struct CreateAccountView: View {
                             lineWidth: 1.5
                         )
                     )
-                    .shadow(color: Color(red: 0.24, green: 0.40, blue: 1.00).opacity(0.45),
+                    .shadow(color: AppTheme.deepBlue.opacity(0.26),
                             radius: 20, x: 0, y: 10)
 
                 Image(systemName: firstName.isEmpty ? "sparkles" : "hand.wave.fill")
@@ -197,7 +197,7 @@ struct CreateAccountView: View {
                 UnlockRow(icon: "calendar",
                           title: "Track training sessions",
                           subtitle: "Schedule practices and capture attendance in a tap.")
-                UnlockRow(icon: "eurosign.circle.fill",
+                UnlockRow(icon: "banknote.fill",
                           title: "Collect monthly fees",
                           subtitle: "See who's paid, who hasn't, and export clean PDFs.")
             }
@@ -209,7 +209,7 @@ struct CreateAccountView: View {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .strokeBorder(AppTheme.softGradient.opacity(0.5), lineWidth: 1)
         )
-        .shadow(color: Color(red: 0.50, green: 0.30, blue: 1.00).opacity(0.18),
+        .shadow(color: AppTheme.cyan.opacity(0.16),
                 radius: 24, x: 0, y: 14)
     }
 
@@ -253,10 +253,10 @@ private struct UnlockRow: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color(.label))
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.caption)
                     .foregroundStyle(Color(.secondaryLabel))
                     .lineLimit(2)

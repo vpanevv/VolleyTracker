@@ -62,7 +62,7 @@ struct EditProfileView: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
             }
-            .navigationTitle("Coach Profile")
+            .navigationTitle(Text("Coach Profile"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
@@ -96,7 +96,7 @@ struct EditProfileView: View {
             .onChange(of: photoItem) { _, item in
                 Task {
                     if let data = try? await item?.loadTransferable(type: Data.self) {
-                        photoData = data
+                        photoData = AvatarImageProcessor.preparedAvatarData(data)
                     }
                 }
             }
@@ -176,24 +176,25 @@ struct EditProfileView: View {
     }
 
     private func save() async {
+        guard !isSaving else { return }
         isSaving = true
         errorMessage = nil
-        do {
-            try await CloudDataService.shared.upsertProfile(
+
+        coach.name = name.trimmed
+        coach.club = club.trimmed
+        coach.role = role
+        coach.photoData = photoData
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        dismiss()
+
+        Task {
+            try? await CloudDataService.shared.upsertProfile(
                 ownerID: coach.remoteID,
-                name: name.trimmed,
-                club: club.trimmed,
-                role: role,
-                photoData: photoData
+                name: coach.name,
+                club: coach.club,
+                role: coach.role,
+                photoData: coach.photoData
             )
-            coach.name = name.trimmed
-            coach.club = club.trimmed
-            coach.role = role
-            coach.photoData = photoData
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
         }
         isSaving = false
     }

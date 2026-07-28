@@ -9,6 +9,7 @@ struct CalendarTabView: View {
     @State private var selectedDate = Date()
     @State private var displayedMonth: Date = Calendar.current.startOfMonth(for: Date())
     @State private var showingAdd = false
+    @State private var showingAddGroup = false
     @State private var recurringGroupToCreate: TeamGroup?
 
     private var coachGroupIDs: Set<PersistentIdentifier> {
@@ -63,8 +64,11 @@ struct CalendarTabView: View {
             ZStack {
                 AuroraBackground()
 
-                ScrollView {
-                    VStack(spacing: 20) {
+                if coach.groups.isEmpty {
+                    CalendarNoTeamsState { showingAddGroup = true }
+                } else {
+                    ScrollView {
+                        VStack(spacing: 20) {
                         // Context row
                         HStack(spacing: 8) {
                             Image(systemName: "calendar.badge.clock")
@@ -150,12 +154,37 @@ struct CalendarTabView: View {
                         Spacer(minLength: 32)
                     }
                     .padding(.top, 8)
+                    }
                 }
             }
-            .navigationTitle("Schedule")
+            .navigationTitle(Text("Schedule"))
             .toolbarBackground(.hidden, for: .navigationBar)
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        selectedDate = Date()
+                        displayedMonth = Calendar.current.startOfMonth(for: Date())
+                    } label: {
+                        Image(systemName: "calendar.circle.fill")
+                            .font(.title3)
+                            .heroGradientForeground()
+                    }
+                    .accessibilityLabel("Jump to today")
+
+                    Button { showingAdd = true } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .heroGradientForeground()
+                    }
+                    .disabled(coach.groups.isEmpty)
+                    .accessibilityLabel("Add training")
+                }
+            }
             .sheet(isPresented: $showingAdd) {
                 AddTrainingView(groups: coach.groups, prefilledDate: selectedDate)
+            }
+            .sheet(isPresented: $showingAddGroup) {
+                AddEditGroupView(coach: coach)
             }
             .sheet(item: $recurringGroupToCreate) { group in
                 AddTrainingView(
@@ -165,6 +194,34 @@ struct CalendarTabView: View {
                 )
             }
         }
+    }
+}
+
+private struct CalendarNoTeamsState: View {
+    let onAddTeam: () -> Void
+
+    var body: some View {
+        VStack(spacing: 18) {
+            CourtIconBadge(icon: "person.3.fill", tint: AppTheme.ocean, size: 76)
+            VStack(spacing: 6) {
+                Text("Create a team first")
+                    .font(.title3.weight(.bold))
+                Text("Teams give trainings a roster, recurring days, and a default fee setup.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            Button(action: onAddTeam) {
+                Label("Add Team", systemImage: "plus")
+            }
+            .buttonStyle(CourtPrimaryButtonStyle())
+        }
+        .padding(24)
+        .frame(maxWidth: 350)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(AppTheme.ocean.opacity(0.15), lineWidth: 1))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 22)
     }
 }
 
@@ -327,16 +384,17 @@ struct CalendarDayCell: View {
 
 struct TrainingCard: View {
     let session: TrainingSession
+    private var tint: Color { Color(teamHex: session.group?.colorHex ?? "") }
 
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppTheme.heroGradient.opacity(0.18))
+                    .fill(tint.opacity(0.18))
                     .frame(width: 48, height: 48)
                 Image(systemName: "figure.volleyball")
                     .font(.title3.weight(.semibold))
-                    .heroGradientForeground()
+                    .foregroundStyle(tint)
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -370,9 +428,9 @@ struct TrainingCard: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(AppTheme.softGradient.opacity(0.4), lineWidth: 1)
+                .strokeBorder(tint.opacity(0.30), lineWidth: 1)
         )
-        .shadow(color: AppTheme.navy.opacity(0.09),
+        .shadow(color: tint.opacity(0.12),
                 radius: 14, x: 0, y: 6)
         .padding(.horizontal)
     }
@@ -380,21 +438,23 @@ struct TrainingCard: View {
 
 struct ScheduledTrainingCard: View {
     let group: TeamGroup
+    @Environment(\.locale) private var locale
+    private var tint: Color { Color(teamHex: group.colorHex) }
 
     private var timeText: String {
         guard let time = group.trainingTime else { return "Time not set" }
-        return time.formatted(date: .omitted, time: .shortened)
+        return time.formatted(.dateTime.hour().minute().locale(locale))
     }
 
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppTheme.energyGradient.opacity(0.28))
+                    .fill(tint.opacity(0.18))
                     .frame(width: 48, height: 48)
                 Image(systemName: "repeat")
                     .font(.title3.weight(.bold))
-                    .foregroundStyle(AppTheme.deepBlue)
+                    .foregroundStyle(tint)
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -411,22 +471,22 @@ struct ScheduledTrainingCard: View {
             Text("SCHEDULED")
                 .font(.system(size: 9, weight: .black))
                 .tracking(0.7)
-                .foregroundStyle(AppTheme.deepBlue)
+                .foregroundStyle(tint)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
-                .background(AppTheme.sun.opacity(0.30), in: Capsule())
+                .background(tint.opacity(0.14), in: Capsule())
 
             Image(systemName: "plus.circle.fill")
                 .font(.title3)
-                .foregroundStyle(AppTheme.ocean)
+                .foregroundStyle(tint)
         }
         .padding(14)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(AppTheme.sun.opacity(0.40), lineWidth: 1)
+                .strokeBorder(tint.opacity(0.30), lineWidth: 1)
         )
-        .shadow(color: AppTheme.navy.opacity(0.08), radius: 12, y: 6)
+        .shadow(color: tint.opacity(0.10), radius: 12, y: 6)
         .padding(.horizontal)
     }
 }

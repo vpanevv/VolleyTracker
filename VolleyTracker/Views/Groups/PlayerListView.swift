@@ -29,7 +29,10 @@ struct PlayerListView: View {
                 List {
                     ForEach(players) { player in
                         NavigationLink(destination: PlayerDetailView(player: player, group: group)) {
-                            PlayerRowView(player: player)
+                            PlayerRowView(
+                                player: player,
+                                tint: Color(teamHex: group.colorHex)
+                            )
                         }
                         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                         .listRowBackground(Color.clear)
@@ -151,10 +154,12 @@ private struct CourtRosterEmptyState: View {
 
 struct PlayerRowView: View {
     let player: Player
+    let tint: Color
 
     var body: some View {
         HStack(spacing: 12) {
             PlayerAvatarView(photoData: player.photoData, name: player.fullName, size: 44)
+                .overlay(Circle().strokeBorder(tint.opacity(0.65), lineWidth: 2))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(player.fullName)
@@ -168,10 +173,10 @@ struct PlayerRowView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(AppTheme.deepBlue, in: .capsule)
+                            .background(tint, in: .capsule)
                     }
                     if player.position != .unknown {
-                        Text(player.position.rawValue)
+                        Text(LocalizedStringKey(player.position.rawValue))
                             .font(.caption)
                             .foregroundStyle(Color(.secondaryLabel))
                     }
@@ -190,8 +195,8 @@ struct PlayerRowView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 17, style: .continuous)
-                .strokeBorder(AppTheme.ocean.opacity(0.14), lineWidth: 1)
+                .strokeBorder(tint.opacity(0.18), lineWidth: 1)
         )
-        .shadow(color: AppTheme.navy.opacity(0.07), radius: 10, y: 5)
+        .shadow(color: tint.opacity(0.08), radius: 10, y: 5)
     }
 }

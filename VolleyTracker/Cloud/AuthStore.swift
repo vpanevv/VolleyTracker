@@ -45,7 +45,7 @@ final class AuthStore: ObservableObject {
         session = try? await client.auth.session
         isLoading = false
 
-        for await (_, newSession) in await client.auth.authStateChanges {
+        for await (_, newSession) in client.auth.authStateChanges {
             session = newSession
             isLoading = false
         }

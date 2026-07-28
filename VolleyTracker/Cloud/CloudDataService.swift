@@ -9,12 +9,12 @@ final class CloudDataService {
     private let client = SupabaseConfig.client
 
     func loadAll(ownerID: UUID, into context: ModelContext) async throws {
-        async let profileRequest: [CoachProfileRow] = client.from("coach_profiles").select().execute().value
-        async let groupRequest: [TeamGroupRow] = client.from("team_groups").select().execute().value
-        async let playerRequest: [PlayerRow] = client.from("players").select().execute().value
-        async let sessionRequest: [TrainingSessionRow] = client.from("training_sessions").select().execute().value
-        async let attendanceRequest: [AttendanceRow] = client.from("attendance_records").select().execute().value
-        async let feeRequest: [FeeRow] = client.from("fee_records").select().execute().value
+        async let profileRequest: [CoachProfileRow] = client.from("coach_profiles").select().eq("id", value: ownerID).execute().value
+        async let groupRequest: [TeamGroupRow] = client.from("team_groups").select().eq("owner_id", value: ownerID).execute().value
+        async let playerRequest: [PlayerRow] = client.from("players").select().eq("owner_id", value: ownerID).execute().value
+        async let sessionRequest: [TrainingSessionRow] = client.from("training_sessions").select().eq("owner_id", value: ownerID).execute().value
+        async let attendanceRequest: [AttendanceRow] = client.from("attendance_records").select().eq("owner_id", value: ownerID).execute().value
+        async let feeRequest: [FeeRow] = client.from("fee_records").select().eq("owner_id", value: ownerID).execute().value
 
         let (profiles, groups, players, sessions, attendance, fees) = try await (
             profileRequest, groupRequest, playerRequest, sessionRequest, attendanceRequest, feeRequest
@@ -196,6 +196,13 @@ final class CloudDataService {
     func upsertFee(_ fee: FeeRecord, playerID: UUID) async throws {
         let ownerID = try await client.auth.session.user.id
         try await client.from("fee_records").upsert(FeeRow(fee, playerID: playerID, ownerID: ownerID)).execute()
+    }
+
+    func upsertFees(_ fees: [(fee: FeeRecord, playerID: UUID)]) async throws {
+        guard !fees.isEmpty else { return }
+        let ownerID = try await client.auth.session.user.id
+        let rows = fees.map { FeeRow($0.fee, playerID: $0.playerID, ownerID: ownerID) }
+        try await client.from("fee_records").upsert(rows).execute()
     }
 
     func delete(table: String, id: UUID) async throws {

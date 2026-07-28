@@ -92,10 +92,7 @@ enum FeeReportPDF {
         let amountColW = contentWidth * 0.20
 
         func formatEuro(_ value: Double) -> String {
-            if value.truncatingRemainder(dividingBy: 1) == 0 {
-                return "€\(Int(value))"
-            }
-            return String(format: "€%.2f", value)
+            AppCurrency.selected.format(value)
         }
 
         let data = renderer.pdfData { ctx in

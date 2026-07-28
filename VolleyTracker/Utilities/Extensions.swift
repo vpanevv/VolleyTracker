@@ -1,5 +1,26 @@
 import SwiftUI
 import Foundation
+import UIKit
+
+// MARK: - Image data
+
+enum AvatarImageProcessor {
+    static func preparedAvatarData(_ data: Data, maxDimension: CGFloat = 640) -> Data {
+        guard let image = UIImage(data: data) else { return data }
+        let longestSide = max(image.size.width, image.size.height)
+        guard longestSide > maxDimension else {
+            return image.jpegData(compressionQuality: 0.82) ?? data
+        }
+
+        let scale = maxDimension / longestSide
+        let targetSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        let resized = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+        return resized.jpegData(compressionQuality: 0.82) ?? data
+    }
+}
 
 // MARK: - String
 

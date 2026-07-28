@@ -1,15 +1,23 @@
+import Foundation
 import SwiftUI
 
-// MARK: - Court Energy design system
+// MARK: - Fresh Court design system
 
 enum AppTheme {
-    static let navy = Color(red: 0.03, green: 0.11, blue: 0.20)
-    static let deepBlue = Color(red: 0.04, green: 0.29, blue: 0.55)
-    static let ocean = Color(red: 0.04, green: 0.43, blue: 0.76)
-    static let cyan = Color(red: 0.09, green: 0.76, blue: 0.76)
-    static let sun = Color(red: 1.00, green: 0.78, blue: 0.27)
-    static let coral = Color(red: 0.97, green: 0.38, blue: 0.31)
-    static let success = Color(red: 0.10, green: 0.67, blue: 0.46)
+    // Legacy names stay in place so every screen adopts the new palette together.
+    static let navy = Color(red: 0.09, green: 0.47, blue: 0.91)
+    static let deepBlue = Color(red: 0.09, green: 0.47, blue: 0.91)
+    static let ocean = Color(red: 0.18, green: 0.66, blue: 1.00)
+    static let cyan = Color(red: 0.18, green: 0.84, blue: 0.77)
+    static let sun = Color(red: 1.00, green: 0.84, blue: 0.35)
+    static let coral = Color(red: 1.00, green: 0.43, blue: 0.38)
+    static let success = Color(red: 0.22, green: 0.79, blue: 0.55)
+
+    static let canvas = Color(red: 0.965, green: 0.988, blue: 1.00)
+    static let ice = Color(red: 0.91, green: 0.975, blue: 1.00)
+    static let surface = Color(uiColor: .secondarySystemBackground).opacity(0.94)
+    static let ink = Color(red: 0.08, green: 0.31, blue: 0.53)
+    static let shadow = deepBlue.opacity(0.10)
 
     static let heroGradient = LinearGradient(
         colors: [deepBlue, ocean, cyan],
@@ -18,13 +26,13 @@ enum AppTheme {
     )
 
     static let deepGradient = LinearGradient(
-        colors: [navy, deepBlue, ocean],
+        colors: [deepBlue, ocean, cyan],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     static let energyGradient = LinearGradient(
-        colors: [sun, Color(red: 1.00, green: 0.58, blue: 0.18)],
+        colors: [sun, Color(red: 1.00, green: 0.72, blue: 0.28)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -35,7 +43,7 @@ enum AppTheme {
         endPoint: .bottomTrailing
     )
 
-    static let hairline = Color.white.opacity(0.20)
+    static let hairline = ocean.opacity(0.16)
     static let cornerRadius: CGFloat = 20
     static let fieldCornerRadius: CGFloat = 16
 }
@@ -43,34 +51,38 @@ enum AppTheme {
 // MARK: - Background
 
 struct AuroraBackground: View {
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: scheme == .dark
-                    ? [AppTheme.navy, Color(red: 0.025, green: 0.07, blue: 0.12)]
-                    : [Color(red: 0.95, green: 0.98, blue: 1.00), Color(red: 0.91, green: 0.97, blue: 0.98)],
-                startPoint: .top,
-                endPoint: .bottom
+                colors: colorScheme == .dark
+                    ? [
+                        Color(red: 0.025, green: 0.07, blue: 0.14),
+                        Color(red: 0.04, green: 0.13, blue: 0.23),
+                        Color(red: 0.03, green: 0.20, blue: 0.25)
+                    ]
+                    : [.white, AppTheme.canvas, AppTheme.ice.opacity(0.78)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
 
             Circle()
                 .fill(AppTheme.ocean)
                 .frame(width: 360, height: 360)
-                .opacity(scheme == .dark ? 0.24 : 0.15)
+                .opacity(0.10)
                 .blur(radius: 95)
                 .offset(x: -170, y: -250)
 
             Circle()
                 .fill(AppTheme.cyan)
                 .frame(width: 300, height: 300)
-                .opacity(scheme == .dark ? 0.17 : 0.12)
+                .opacity(0.10)
                 .blur(radius: 90)
                 .offset(x: 190, y: 120)
 
             VolleyballCourtLines()
-                .stroke(scheme == .dark ? Color.white.opacity(0.035) : AppTheme.deepBlue.opacity(0.045),
+                .stroke(AppTheme.ocean.opacity(0.055),
                         style: StrokeStyle(lineWidth: 1.2, lineCap: .round))
                 .frame(width: 420, height: 660)
                 .rotationEffect(.degrees(-14))
@@ -83,24 +95,28 @@ struct AuroraBackground: View {
 
 /// A calmer surface for information-dense team screens.
 struct CourtWorkspaceBackground: View {
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: scheme == .dark
-                    ? [AppTheme.navy, Color(red: 0.03, green: 0.08, blue: 0.13)]
-                    : [Color(red: 0.965, green: 0.985, blue: 1.0), Color(red: 0.94, green: 0.975, blue: 0.98)],
+                colors: colorScheme == .dark
+                    ? [
+                        Color(red: 0.02, green: 0.055, blue: 0.12),
+                        Color(red: 0.035, green: 0.12, blue: 0.21),
+                        Color(red: 0.025, green: 0.16, blue: 0.20)
+                    ]
+                    : [.white, AppTheme.canvas, AppTheme.ice.opacity(0.62)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             Circle()
-                .fill(AppTheme.ocean.opacity(scheme == .dark ? 0.16 : 0.08))
+                .fill(AppTheme.ocean.opacity(0.07))
                 .frame(width: 280, height: 280)
                 .blur(radius: 80)
                 .offset(x: -170, y: -280)
             Circle()
-                .fill(AppTheme.cyan.opacity(scheme == .dark ? 0.10 : 0.06))
+                .fill(AppTheme.cyan.opacity(0.06))
                 .frame(width: 260, height: 260)
                 .blur(radius: 90)
                 .offset(x: 180, y: 300)
@@ -133,12 +149,12 @@ struct GlassCard<Content: View>: View {
 
     var body: some View {
         content()
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(AppTheme.softGradient.opacity(0.42), lineWidth: 1)
             )
-            .shadow(color: AppTheme.navy.opacity(0.10), radius: 18, x: 0, y: 10)
+            .shadow(color: AppTheme.shadow, radius: 18, x: 0, y: 10)
     }
 }
 
@@ -170,12 +186,13 @@ struct CourtSectionLabel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(title.uppercased())
+            Text(LocalizedStringKey(title))
+                .textCase(.uppercase)
                 .font(.caption.weight(.bold))
                 .tracking(1.1)
                 .foregroundStyle(AppTheme.deepBlue)
             if let subtitle {
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -202,7 +219,7 @@ struct CourtTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 4) {
-                Text(label)
+                Text(LocalizedStringKey(label))
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                 if isRequired {
@@ -215,7 +232,11 @@ struct CourtTextField: View {
             HStack(spacing: 12) {
                 CourtIconBadge(icon: icon, tint: isFocused ? AppTheme.cyan : AppTheme.ocean, size: 38)
 
-                TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(.tertiary))
+                TextField(
+                    "",
+                    text: $text,
+                    prompt: Text(LocalizedStringKey(placeholder)).foregroundStyle(.tertiary)
+                )
                     .textContentType(contentType)
                     .keyboardType(keyboardType)
                     .textInputAutocapitalization(capitalization)
@@ -232,7 +253,7 @@ struct CourtTextField: View {
             }
             .padding(.horizontal, 14)
             .frame(minHeight: 58)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous))
+            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous)
                     .strokeBorder(isFocused ? AnyShapeStyle(AppTheme.heroGradient) : AnyShapeStyle(AppTheme.ocean.opacity(0.18)),
@@ -241,7 +262,7 @@ struct CourtTextField: View {
             .shadow(color: isFocused ? AppTheme.cyan.opacity(0.14) : .clear, radius: 12, y: 5)
 
             if let helper {
-                Text(helper)
+                Text(LocalizedStringKey(helper))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -260,13 +281,13 @@ struct CourtTextEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
 
             ZStack(alignment: .topLeading) {
                 if text.isEmpty {
-                    Text(placeholder)
+                    Text(LocalizedStringKey(placeholder))
                         .foregroundStyle(.tertiary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 15)
@@ -277,7 +298,7 @@ struct CourtTextEditor: View {
                     .focused($isFocused)
             }
             .frame(minHeight: minimumHeight)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous))
+            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.fieldCornerRadius, style: .continuous)
                     .strokeBorder(isFocused ? AnyShapeStyle(AppTheme.heroGradient) : AnyShapeStyle(AppTheme.ocean.opacity(0.18)),
@@ -297,7 +318,7 @@ struct ThemedTextField: View {
     var body: some View {
         HStack(spacing: 14) {
             CourtIconBadge(icon: icon, size: 38)
-            TextField(placeholder, text: $text)
+            TextField(LocalizedStringKey(placeholder), text: $text)
                 .textContentType(contentType)
                 .font(.body.weight(.medium))
                 .foregroundStyle(.primary)
@@ -349,7 +370,7 @@ struct CourtSecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(AppTheme.deepBlue)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 48)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 15, style: .continuous)
                     .strokeBorder(AppTheme.ocean.opacity(0.24), lineWidth: 1)
@@ -374,5 +395,33 @@ enum Greeting {
         case 17..<22: return "Good evening"
         default: return "Hello"
         }
+    }
+}
+
+extension Color {
+    init(teamHex hex: String) {
+        let cleaned = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var value: UInt64 = 0
+        Scanner(string: cleaned).scanHexInt64(&value)
+
+        let red: UInt64
+        let green: UInt64
+        let blue: UInt64
+
+        if cleaned.count == 6 {
+            red = value >> 16
+            green = value >> 8 & 0xFF
+            blue = value & 0xFF
+        } else {
+            red = 0
+            green = 122
+            blue = 255
+        }
+
+        self.init(
+            red: Double(red) / 255,
+            green: Double(green) / 255,
+            blue: Double(blue) / 255
+        )
     }
 }

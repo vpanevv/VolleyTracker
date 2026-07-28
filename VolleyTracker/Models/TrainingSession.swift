@@ -31,10 +31,33 @@ final class TrainingSession {
 
     var attendanceTaken: Bool { !attendanceRecords.isEmpty }
 
+    var scheduledStart: Date {
+        combinedDate(using: startTime)
+    }
+
+    var scheduledEnd: Date {
+        combinedDate(using: endTime)
+    }
+
     var timeRange: String {
         let fmt = DateFormatter()
+        fmt.locale = AppLanguage.selected.locale
         fmt.timeStyle = .short
         fmt.dateStyle = .none
         return "\(fmt.string(from: startTime))–\(fmt.string(from: endTime))"
+    }
+
+    private func combinedDate(using time: Date) -> Date {
+        let calendar = Calendar.current
+        let dateParts = calendar.dateComponents([.year, .month, .day], from: date)
+        let timeParts = calendar.dateComponents([.hour, .minute, .second], from: time)
+        var components = DateComponents()
+        components.year = dateParts.year
+        components.month = dateParts.month
+        components.day = dateParts.day
+        components.hour = timeParts.hour
+        components.minute = timeParts.minute
+        components.second = timeParts.second
+        return calendar.date(from: components) ?? date
     }
 }

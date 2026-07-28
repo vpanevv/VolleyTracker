@@ -118,7 +118,7 @@ struct GroupsListView: View {
                     }
                 }
             }
-            .navigationTitle("Home")
+            .navigationTitle(Text("Home"))
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -177,22 +177,22 @@ struct AIGreetingHeader: View {
     let unpaidPlayerCount: Int
 
     @State private var now = Date()
-    private let ticker = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+    @Environment(\.locale) private var locale
 
     private var firstName: String {
         coachName.split(separator: " ").first.map(String.init) ?? "Coach"
     }
 
     private var weekdayText: String {
-        now.formatted(.dateTime.weekday(.wide))
+        now.formatted(.dateTime.weekday(.wide).locale(locale))
     }
 
     private var dateText: String {
-        now.formatted(.dateTime.day().month(.wide).year())
+        now.formatted(.dateTime.day().month(.wide).year().locale(locale))
     }
 
     private var timeText: String {
-        now.formatted(date: .omitted, time: .shortened)
+        now.formatted(.dateTime.hour().minute().locale(locale))
     }
 
     var body: some View {
@@ -226,9 +226,19 @@ struct AIGreetingHeader: View {
                     .shadow(color: AppTheme.cyan.opacity(0.45),
                             radius: 6, x: 0, y: 0)
             }
-            .onReceive(ticker) { now = $0 }
+            .task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(30))
+                    now = Date()
+                }
+            }
 
-            Text("\(Greeting.forNow()),\nCoach \(firstName)")
+            (
+                Text(LocalizedStringKey(Greeting.forNow()))
+                + Text(",\n")
+                + Text("Coach")
+                + Text(" \(firstName)")
+            )
                 .font(.system(size: 30, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
@@ -254,7 +264,7 @@ struct AIGreetingHeader: View {
                              value: "\(todayTrainingCount)",
                              label: "today",
                              tint: AppTheme.deepBlue)
-                    StatPill(icon: "eurosign.circle.fill",
+                    StatPill(icon: "banknote.fill",
                              value: "\(unpaidPlayerCount)",
                              label: "unpaid",
                              tint: unpaidPlayerCount == 0 ? AppTheme.success : AppTheme.coral)

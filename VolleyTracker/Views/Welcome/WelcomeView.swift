@@ -10,18 +10,30 @@ struct WelcomeView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
+                AuroraBackground()
+
                 Image("welcomeBG")
                     .resizable()
                     .scaledToFill()
-                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .frame(width: proxy.size.width, height: proxy.size.height * 0.48)
                     .clipped()
+                    .saturation(0.62)
+                    .contrast(0.86)
+                    .opacity(0.18)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .mask(
+                        LinearGradient(
+                            colors: [.clear, .white.opacity(0.45), .white],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
 
                 LinearGradient(
                     colors: [
-                        AppTheme.navy.opacity(0.40),
-                        AppTheme.navy.opacity(0.20),
-                        AppTheme.navy.opacity(0.82),
-                        AppTheme.navy.opacity(0.96)
+                        Color.white.opacity(0.74),
+                        AppTheme.canvas.opacity(0.34),
+                        AppTheme.canvas.opacity(0.78)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -30,13 +42,13 @@ struct WelcomeView: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         brandHero
-                            .padding(.top, 68)
+                            .padding(.top, 42)
 
-                        Spacer(minLength: 80)
+                        Spacer(minLength: 36)
 
                         authenticationCard
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 18)
+                            .padding(.bottom, 22)
                     }
                     .frame(minHeight: proxy.size.height)
                 }
@@ -46,35 +58,37 @@ struct WelcomeView: View {
     }
 
     private var brandHero: some View {
-        VStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(.white.opacity(0.14))
-                    .frame(width: 88, height: 88)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .strokeBorder(.white.opacity(0.28), lineWidth: 1)
-                    )
-                Image(systemName: "figure.volleyball")
-                    .font(.system(size: 42, weight: .bold))
-                    .foregroundStyle(AppTheme.sun)
-            }
+        VStack(spacing: 16) {
+            Image("VolleyTrackerLightIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 124, height: 124)
+                .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.92), lineWidth: 2)
+                )
+                .shadow(color: AppTheme.shadow, radius: 24, y: 12)
 
             VStack(spacing: 7) {
                 Text("VolleyTracker")
                     .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .heroGradientForeground()
                 Text("Run your team from one court-side command center.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(.white.opacity(0.78))
+                    .foregroundStyle(AppTheme.ink.opacity(0.78))
                     .padding(.horizontal, 24)
             }
         }
-        .foregroundStyle(.white)
     }
 
     private var authenticationCard: some View {
         VStack(spacing: 16) {
+            Capsule()
+                .fill(AppTheme.heroGradient)
+                .frame(width: 46, height: 5)
+
             VStack(alignment: .leading, spacing: 5) {
                 Text("WELCOME TO THE TEAM")
                     .font(.caption2.weight(.black))
@@ -95,7 +109,7 @@ struct WelcomeView: View {
                 } onCompletion: { result in
                     handleApple(result)
                 }
-                .signInWithAppleButtonStyle(.black)
+                .signInWithAppleButtonStyle(.whiteOutline)
                 .frame(maxWidth: 320)
                 .frame(height: 54)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -109,7 +123,7 @@ struct WelcomeView: View {
                         Text("Continue with Google")
                     }
                     .font(.headline)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(AppTheme.ink)
                     .frame(maxWidth: .infinity)
                     .frame(height: 54)
                     .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -117,6 +131,7 @@ struct WelcomeView: View {
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .strokeBorder(AppTheme.ocean.opacity(0.18), lineWidth: 1)
                     )
+                    .shadow(color: AppTheme.shadow.opacity(0.65), radius: 8, y: 4)
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: 320)
@@ -146,12 +161,12 @@ struct WelcomeView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 22)
         .frame(maxWidth: 370)
-        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .background(Color.white.opacity(0.96), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .strokeBorder(.white.opacity(0.18), lineWidth: 1)
+                .strokeBorder(AppTheme.softGradient.opacity(0.42), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.28), radius: 28, y: 14)
+        .shadow(color: AppTheme.deepBlue.opacity(0.13), radius: 28, y: 14)
     }
 
     private func handleApple(_ result: Result<ASAuthorization, Error>) {

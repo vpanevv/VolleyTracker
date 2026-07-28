@@ -18,8 +18,12 @@ struct AddEditGroupView: View {
     @State private var monthlyFeeText = ""
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @AppStorage(AppCurrency.storageKey) private var currencyCode = AppCurrency.eur.rawValue
 
     private var isEditing: Bool { group != nil }
+    private var selectedCurrency: AppCurrency {
+        AppCurrency(rawValue: currencyCode) ?? .eur
+    }
 
     private let colors = [
         "#0A6EC2","#0464A8","#18C2C2","#12A873",
@@ -92,9 +96,9 @@ struct AddEditGroupView: View {
                         VStack(alignment: .leading, spacing: 13) {
                             CourtSectionLabel("Monthly fee", subtitle: "Used for collection tracking and reports.")
                             CourtTextField(
-                                label: "Fee per player (€)",
+                                label: "Fee per player (\(selectedCurrency.symbol))",
                                 placeholder: "0",
-                                icon: "eurosign.circle.fill",
+                                icon: "banknote.fill",
                                 text: $monthlyFeeText,
                                 keyboardType: .decimalPad,
                                 capitalization: .never,
@@ -175,7 +179,9 @@ struct AddEditGroupView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle(isEditing ? "Edit Group" : "New Group")
+            .navigationTitle(
+                Text(LocalizedStringKey(isEditing ? "Edit Group" : "New Group"))
+            )
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
@@ -360,45 +366,41 @@ struct AddEditGroupView: View {
     }
 
     private func save() async {
+        guard !isSaving else { return }
         isSaving = true
         errorMessage = nil
+
         let fee = parsedFee()
         let savedGroup: TeamGroup
-        let isNewGroup: Bool
-        if let g = group {
-            g.name         = name.trimmed
-            g.ageCategory  = ageCategory.trimmed
-            g.colorHex     = colorHex
-            g.emoji        = emoji
-            g.trainingDays = Array(selectedDays).sorted()
-            g.trainingTime = hasTime ? trainingTime : nil
-            g.monthlyFee   = fee
-            savedGroup = g
-            isNewGroup = false
+        if let group {
+            group.name = name.trimmed
+            group.ageCategory = ageCategory.trimmed
+            group.colorHex = colorHex
+            group.emoji = emoji
+            group.trainingDays = Array(selectedDays).sorted()
+            group.trainingTime = hasTime ? trainingTime : nil
+            group.monthlyFee = fee
+            savedGroup = group
         } else {
-            let g = TeamGroup(
+            let group = TeamGroup(
                 name: name.trimmed,
                 ageCategory: ageCategory.trimmed,
                 colorHex: colorHex,
                 emoji: emoji,
                 monthlyFee: fee
             )
-            g.trainingDays = Array(selectedDays).sorted()
-            g.trainingTime = hasTime ? trainingTime : nil
-            savedGroup = g
-            isNewGroup = true
+            group.trainingDays = Array(selectedDays).sorted()
+            group.trainingTime = hasTime ? trainingTime : nil
+            modelContext.insert(group)
+            coach.groups.append(group)
+            savedGroup = group
         }
-        do {
-            try await CloudDataService.shared.upsertGroup(savedGroup)
-            if isNewGroup {
-                modelContext.insert(savedGroup)
-                coach.groups.append(savedGroup)
-            }
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+
+        try? modelContext.save()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        dismiss()
+
+        Task { try? await CloudDataService.shared.upsertGroup(savedGroup) }
         isSaving = false
     }
 }

@@ -11,12 +11,14 @@
 		035A718A9EF8629124181C3D /* CalendarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474773EECE282536FC9F09CA /* CalendarTabView.swift */; };
 		08CB901C662A88D5F20E1201 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 3DB89E10F669C9FF4B1B53BC /* Supabase */; };
 		2CA44F690877923D9EAED8E5 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC2AEB762C43D381E7EB8D5 /* Player.swift */; };
+		38DA734F9979EC76F15413D9 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA55BC5CF6CC6BB528D0AF9 /* AppLanguage.swift */; };
 		3C3FA027090E16A9142BA121 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2584DE0D54D46C23A42CAA /* SettingsView.swift */; };
 		3CEDFE0F167C4AF8271277D3 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82FECD88EDBE07A0332F65D5 /* EditProfileView.swift */; };
 		4164B02E4011ABAC1940BEC1 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFFC2BC411EE799118A431D4 /* LoginView.swift */; };
 		453B69C9880C25F519F25E1B /* AddTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B18C2949D9F60938D85332E /* AddTrainingView.swift */; };
 		5E599F6481D31CDB62DE815C /* AddEditPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE5B14BC6C545756CE3F68BE /* AddEditPlayerView.swift */; };
 		5E5BF56C397246ABCAAD07F7 /* FeeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0F324F5279566E1A195FAA /* FeeRecord.swift */; };
+		68267BC230131F8E00345ADA /* DashboardHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68267BC130131F8E00345ADA /* DashboardHomeView.swift */; };
 		6BACEC4B31E3E77B4F73477E /* GroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C516B7A95B03D4384B0C52E /* GroupDetailView.swift */; };
 		7C32C145788CC54294D8D8A7 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94114424BCA14A825096E791 /* CreateAccountView.swift */; };
 		7F33280EB94D32647ED99A35 /* AddEditGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373F3693181F31B9FD9D640 /* AddEditGroupView.swift */; };
@@ -25,6 +27,7 @@
 		A0727192E1D717D6D4B42CCE /* PlayerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AE44A592E88B1AFEF21B4 /* PlayerListView.swift */; };
 		A43011932CA67C93A531C9A1 /* Coach.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0704F48C34F8C6C4263448 /* Coach.swift */; };
 		A55C869217BB6B6F330A76F1 /* PlayerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 026F292CE97916648E1F9A55 /* PlayerDetailView.swift */; };
+		A561CC7B6202AED89547FB73 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 048481AA2BB51C23F9019508 /* Localizable.strings */; };
 		A8B1F25961370E2CCD4EEC54 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6DB0A2E9C80D5316D3EFFF /* Group.swift */; };
 		B3464C9FF1C1D0309B03FFF8 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14F147008E5857E6F9466A9 /* Extensions.swift */; };
 		B5BCC8A26745A9288FBA6D30 /* CloudDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141EC8CC14776E0B87D0F850 /* CloudDataService.swift */; };
@@ -43,6 +46,7 @@
 
 /* Begin PBXFileReference section */
 		026F292CE97916648E1F9A55 /* PlayerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDetailView.swift; sourceTree = "<group>"; };
+		048481AA2BB51C23F9019508 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		141EC8CC14776E0B87D0F850 /* CloudDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudDataService.swift; sourceTree = "<group>"; };
 		2373F3693181F31B9FD9D640 /* AddEditGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditGroupView.swift; sourceTree = "<group>"; };
 		2BDB5EF2996AA7A3D4D19FBF /* TrainingAttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingAttendanceView.swift; sourceTree = "<group>"; };
@@ -52,6 +56,7 @@
 		5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		5894418978953F2B5C476DB7 /* GroupsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsListView.swift; sourceTree = "<group>"; };
 		60183628B3AE7433C02F22CB /* FeeOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeOverviewView.swift; sourceTree = "<group>"; };
+		68267BC130131F8E00345ADA /* DashboardHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardHomeView.swift; sourceTree = "<group>"; };
 		6B18C2949D9F60938D85332E /* AddTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTrainingView.swift; sourceTree = "<group>"; };
 		7C0704F48C34F8C6C4263448 /* Coach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coach.swift; sourceTree = "<group>"; };
 		7E34C185681EB16B1874BF72 /* AttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceView.swift; sourceTree = "<group>"; };
@@ -61,10 +66,11 @@
 		8C0DB1B14481B352DBEF0633 /* FeeReportPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeReportPDF.swift; sourceTree = "<group>"; };
 		94114424BCA14A825096E791 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
 		99176F808613C8CA0B833188 /* VolleyTracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VolleyTracker.entitlements; sourceTree = "<group>"; };
+		9AA55BC5CF6CC6BB528D0AF9 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		9C516B7A95B03D4384B0C52E /* GroupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailView.swift; sourceTree = "<group>"; };
 		A06B496D46D0402E6812E5ED /* AttendanceRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceRecord.swift; sourceTree = "<group>"; };
 		AB01352D55BC33593F3EE367 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		B0FD636187B38B382F991B93 /* VolleyTracker.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VolleyTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0FD636187B38B382F991B93 /* VolleyTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VolleyTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B14F147008E5857E6F9466A9 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolleyTrackerApp.swift; sourceTree = "<group>"; };
 		BC0F324F5279566E1A195FAA /* FeeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeRecord.swift; sourceTree = "<group>"; };
@@ -95,6 +101,7 @@
 			children = (
 				FB35B120B4601FE39F5755E3 /* Assets.xcassets */,
 				AB01352D55BC33593F3EE367 /* Info.plist */,
+				048481AA2BB51C23F9019508 /* Localizable.strings */,
 				99176F808613C8CA0B833188 /* VolleyTracker.entitlements */,
 				B9BD665A153B1ACFC8C2340E /* VolleyTrackerApp.swift */,
 				D7E346CC77D47B6CFF137BF0 /* Cloud */,
@@ -127,6 +134,7 @@
 		3E0827D1BD9272263BCAC84C /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				9AA55BC5CF6CC6BB528D0AF9 /* AppLanguage.swift */,
 				5865884E4C3E68F3A28F5EE1 /* AppTheme.swift */,
 				B14F147008E5857E6F9466A9 /* Extensions.swift */,
 				8C0DB1B14481B352DBEF0633 /* FeeReportPDF.swift */,
@@ -163,6 +171,7 @@
 				AF8947491E1D6D7854221305 /* Groups */,
 				13BD09C5DBB384611723B61C /* Settings */,
 				F7C5CA4EC74C9DF17541DA4F /* Welcome */,
+				68267BC130131F8E00345ADA /* DashboardHomeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -252,6 +261,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				bg,
 				en,
 			);
 			mainGroup = 505CE9887669810BACFDBDC0;
@@ -275,6 +285,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED97B628441FB8E6FF018049 /* Assets.xcassets in Resources */,
+				A561CC7B6202AED89547FB73 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +299,7 @@
 				7F33280EB94D32647ED99A35 /* AddEditGroupView.swift in Sources */,
 				5E599F6481D31CDB62DE815C /* AddEditPlayerView.swift in Sources */,
 				453B69C9880C25F519F25E1B /* AddTrainingView.swift in Sources */,
+				38DA734F9979EC76F15413D9 /* AppLanguage.swift in Sources */,
 				E7A040A8BBEAA99E5163816A /* AppTheme.swift in Sources */,
 				F8A6E732A07E9BFCB7C4D353 /* AttendanceRecord.swift in Sources */,
 				DE7CD03D6E29806353B74EB2 /* AttendanceView.swift in Sources */,
@@ -313,6 +325,7 @@
 				937D7EEE877CC2700A0E511C /* SupabaseConfig.swift in Sources */,
 				0075012E7CA6C1D38E8FC4A1 /* TrainingAttendanceView.swift in Sources */,
 				E7EE503BBD477B3244B30013 /* TrainingSession.swift in Sources */,
+				68267BC230131F8E00345ADA /* DashboardHomeView.swift in Sources */,
 				CB23EBFFF0C746928963594C /* VolleyTrackerApp.swift in Sources */,
 				82718A17505989669A482B6C /* WelcomeView.swift in Sources */,
 			);
@@ -327,7 +340,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = VolleyTracker/VolleyTracker.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = DP5G9GAZQJ;
 				INFOPLIST_FILE = VolleyTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -335,7 +348,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vpanev.volleytracker;
 				PRODUCT_NAME = VolleyTracker;
 				SDKROOT = iphoneos;
@@ -405,7 +418,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = VolleyTracker/VolleyTracker.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = DP5G9GAZQJ;
 				INFOPLIST_FILE = VolleyTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -413,7 +426,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vpanev.volleytracker;
 				PRODUCT_NAME = VolleyTracker;
 				SDKROOT = iphoneos;

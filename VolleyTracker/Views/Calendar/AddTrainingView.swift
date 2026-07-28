@@ -12,6 +12,7 @@ struct AddTrainingView: View {
     @State private var startTime: Date
     @State private var endTime: Date
     @State private var notes = ""
+    @State private var isSaving = false
 
     // Called with [group] + same group when launched from AttendanceView
     // Called with coach.groups + nil when launched from CalendarTabView
@@ -37,7 +38,9 @@ struct AddTrainingView: View {
         _endTime   = State(initialValue: endDate)
     }
 
-    private var canSave: Bool { selectedGroup != nil }
+    private var canSave: Bool {
+        selectedGroup != nil && !isSaving && endTime > startTime
+    }
 
     var body: some View {
         NavigationStack {
@@ -174,7 +177,7 @@ struct AddTrainingView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle("Add Training")
+            .navigationTitle(Text("Add Training"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
@@ -184,7 +187,10 @@ struct AddTrainingView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button { save() } label: {
-                        Text("Save")
+                        HStack(spacing: 6) {
+                            if isSaving { ProgressView().tint(.white) }
+                            Text(isSaving ? "Saving" : "Save")
+                        }
                             .font(.footnote.weight(.bold))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 16)
@@ -215,7 +221,8 @@ struct AddTrainingView: View {
     }
 
     private func save() {
-        guard let group = selectedGroup else { return }
+        guard canSave, let group = selectedGroup else { return }
+        isSaving = true
 
         let session = TrainingSession(
             date: date,
@@ -251,7 +258,7 @@ private struct ThemedDatePickerRow: View {
                     .font(.footnote.weight(.bold))
                     .heroGradientForeground()
             }
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.body)
                 .foregroundStyle(Color(.label))
             Spacer()

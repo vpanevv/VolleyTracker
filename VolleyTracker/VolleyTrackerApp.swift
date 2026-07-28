@@ -5,6 +5,8 @@ import PhotosUI
 @main
 struct VolleyTrackerApp: App {
     @StateObject private var authStore = AuthStore()
+    @AppStorage(AppLanguage.storageKey) private var languageCode = AppLanguage.defaultLanguage.rawValue
+    @AppStorage(AppAppearance.storageKey) private var appearanceCode = AppAppearance.system.rawValue
 
     private let container: ModelContainer = {
         let schema = Schema([
@@ -27,6 +29,14 @@ struct VolleyTrackerApp: App {
         WindowGroup {
             CloudAppRoot()
                 .environmentObject(authStore)
+                .environment(
+                    \.locale,
+                    AppLanguage(rawValue: languageCode)?.locale ?? AppLanguage.defaultLanguage.locale
+                )
+                .preferredColorScheme(
+                    AppAppearance(rawValue: appearanceCode)?.colorScheme
+                )
+                .tint(AppTheme.deepBlue)
         }
         .modelContainer(container)
     }
@@ -181,7 +191,7 @@ private struct CreateCloudProfileView: View {
             .onChange(of: photoItem) { _, item in
                 Task {
                     if let data = try? await item?.loadTransferable(type: Data.self) {
-                        photoData = data
+                        photoData = AvatarImageProcessor.preparedAvatarData(data)
                     }
                 }
             }
@@ -192,7 +202,12 @@ private struct CreateCloudProfileView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 HStack(spacing: 9) {
-                    CourtIconBadge(icon: "figure.volleyball", tint: AppTheme.sun, size: 38)
+                    Image("VolleyTrackerLightIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40, height: 40)
+                        .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+                        .shadow(color: AppTheme.shadow, radius: 6, y: 3)
                     Text("VOLLEYTRACKER")
                         .font(.caption.weight(.black))
                         .tracking(1.4)
@@ -283,7 +298,7 @@ private struct CreateCloudProfileView: View {
                             CourtIconBadge(icon: option.icon,
                                            tint: role == option ? AppTheme.sun : AppTheme.ocean,
                                            size: 42)
-                            Text(option.rawValue)
+                            Text(LocalizedStringKey(option.rawValue))
                                 .font(.body.weight(.semibold))
                                 .foregroundStyle(.primary)
                             Spacer()
@@ -351,6 +366,7 @@ private struct CreateCloudProfileView: View {
 
 private struct CloudLoadingView: View {
     @State private var isAnimating = false
+    @State private var isBouncing = false
 
     var body: some View {
         ZStack {
@@ -365,9 +381,16 @@ private struct CloudLoadingView: View {
                         .stroke(AppTheme.heroGradient, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                         .frame(width: 84, height: 84)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                    Image(systemName: "figure.volleyball")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(AppTheme.deepBlue)
+                    Image("VolleyTrackerLightIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 54, height: 54)
+                        .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+                    Text("🏐")
+                        .font(.system(size: 24))
+                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                        .offset(y: isBouncing ? -58 : -48)
+                        .shadow(color: AppTheme.deepBlue.opacity(0.20), radius: 5, y: 3)
                 }
                 Text("Preparing your court…")
                     .font(.headline)
@@ -379,6 +402,9 @@ private struct CloudLoadingView: View {
         .onAppear {
             withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
                 isAnimating = true
+            }
+            withAnimation(.easeInOut(duration: 0.52).repeatForever(autoreverses: true)) {
+                isBouncing = true
             }
         }
     }

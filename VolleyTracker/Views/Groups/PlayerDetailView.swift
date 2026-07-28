@@ -32,7 +32,10 @@ struct PlayerDetailView: View {
                                 .foregroundStyle(Color(.label))
                         }
                         if player.position != .unknown {
-                            Label(player.position.rawValue, systemImage: player.position.sfSymbol)
+                            Label(
+                                LocalizedStringKey(player.position.rawValue),
+                                systemImage: player.position.sfSymbol
+                            )
                                 .font(.subheadline)
                                 .foregroundStyle(Color(.secondaryLabel))
                         }
@@ -135,7 +138,7 @@ struct PlayerDetailView: View {
                             .font(.subheadline)
                             .foregroundStyle(Color(.label))
                         Spacer()
-                        Label(s.rawValue, systemImage: s.sfSymbol)
+                        Label(LocalizedStringKey(s.rawValue), systemImage: s.sfSymbol)
                             .font(.caption.weight(.medium))
                             .foregroundStyle(s.color)
                     }

@@ -120,7 +120,9 @@ struct AddEditPlayerView: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
             }
-            .navigationTitle(isEditing ? "Edit Player" : "New Player")
+            .navigationTitle(
+                Text(LocalizedStringKey(isEditing ? "Edit Player" : "New Player"))
+            )
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
@@ -149,7 +151,7 @@ struct AddEditPlayerView: View {
             .onChange(of: photoItem) { _, item in
                 Task {
                     if let data = try? await item?.loadTransferable(type: Data.self) {
-                        photoData = data
+                        photoData = AvatarImageProcessor.preparedAvatarData(data)
                     }
                 }
             }
@@ -191,13 +193,13 @@ struct AddEditPlayerView: View {
                 Text("Position")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                Text(position.rawValue)
+                Text(LocalizedStringKey(position.rawValue))
                     .font(.body.weight(.semibold))
             }
             Spacer()
             Picker("Position", selection: $position) {
                 ForEach(PlayerPosition.allCases, id: \.self) { option in
-                    Text(option.rawValue).tag(option)
+                    Text(LocalizedStringKey(option.rawValue)).tag(option)
                 }
             }
             .labelsHidden()
@@ -220,8 +222,8 @@ struct AddEditPlayerView: View {
         HStack(spacing: 12) {
             CourtIconBadge(icon: icon, tint: AppTheme.sun, size: 42)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.body.weight(.semibold))
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                Text(LocalizedStringKey(title)).font(.body.weight(.semibold))
+                Text(LocalizedStringKey(subtitle)).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Toggle("", isOn: isOn.animation())
@@ -266,37 +268,43 @@ struct AddEditPlayerView: View {
     private func save() async {
         guard !isSaving else { return }
         isSaving = true
-        defer { isSaving = false }
         errorMessage = nil
 
         let jersey = Int(jerseyText)
-        let draft = Player(
-            remoteID: player?.remoteID ?? draftRemoteID,
-            fullName: fullName.trimmed,
-            jerseyNumber: jersey,
-            position: position
-        )
-        draft.dateOfBirth = hasDOB ? dob : nil
-        draft.parentName = parentName.trimmed
-        draft.parentPhone = parentPhone.trimmed
-        draft.notes = notes.trimmed
-        draft.photoData = photoData
-
-        do {
-            try await CloudDataService.shared.upsertPlayer(draft, groupID: group.remoteID)
-
-            if let player {
-                apply(draft, to: player)
-            } else {
-                modelContext.insert(draft)
-                group.players.append(draft)
-            }
-
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
+        let savedPlayer: Player
+        if let player {
+            player.fullName = fullName.trimmed
+            player.jerseyNumber = jersey
+            player.position = position
+            player.dateOfBirth = hasDOB ? dob : nil
+            player.parentName = parentName.trimmed
+            player.parentPhone = parentPhone.trimmed
+            player.notes = notes.trimmed
+            player.photoData = photoData
+            savedPlayer = player
+        } else {
+            let player = Player(
+                remoteID: draftRemoteID,
+                fullName: fullName.trimmed,
+                jerseyNumber: jersey,
+                position: position
+            )
+            player.dateOfBirth = hasDOB ? dob : nil
+            player.parentName = parentName.trimmed
+            player.parentPhone = parentPhone.trimmed
+            player.notes = notes.trimmed
+            player.photoData = photoData
+            modelContext.insert(player)
+            group.players.append(player)
+            savedPlayer = player
         }
+
+        try? modelContext.save()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        dismiss()
+
+        Task { try? await CloudDataService.shared.upsertPlayer(savedPlayer, groupID: group.remoteID) }
+        isSaving = false
     }
 
     private func apply(_ draft: Player, to player: Player) {
